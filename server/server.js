@@ -106,6 +106,7 @@ app.all('*', (function () {
 app.get('/', function (req, res) {
     res.json({
         user: req.user,
+        groups: req.groups,
         _csrf: req.csrf
     });
 });
