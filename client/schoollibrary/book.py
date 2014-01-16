@@ -55,7 +55,7 @@ class BookTableModel(QAbstractTableModel):
         self.app.network.finished.connect(self.onNetworkRequestFinished)
         self.cache = indexed.IndexedOrderedDict()
 
-    def index(self, row, column=QModelIndex()):
+    def index(self, row, column, parent=QModelIndex()):
         if parent.isValid() or not self.hasIndex(row, column, parent):
             return QModelIndex()
         else:
