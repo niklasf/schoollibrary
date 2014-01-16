@@ -10,19 +10,19 @@ mongoose.connect('mongodb://localhost/test');
 mongooseAutoIncrement.initialize(mongoose.connection);
 
 var bookSchema = mongoose.Schema({
-    etag: Number,
-    title: String,
-    authors: String,
-    topic: String,
-    keywords: String,
-    signature: String,
-    location: String,
-    isbn: String,
-    year: Number,
-    publisher: String,
+    etag: { type: Number, required: true },
+    title: { type: String, required: true },
+    authors: { type: String, default: '' },
+    topic: { type: String, default: '' },
+    keywords: { type: String, default: '' },
+    signature: { type: String, default: '' },
+    location: { type: String, default: '' },
+    isbn: { type: String, default: '' },
+    year: { type: Number },
+    publisher: { type: String, default: '' },
     placeOfPublication: { type: String, default: '' },
-    volume: Number,
-    lendable: Boolean,
+    volume: { type: String, default: '' },
+    lendable: { type: Boolean, default: true },
     lending: {
         user: String,
         since: Date,
@@ -122,18 +122,44 @@ app.get('/books/', function (req, res) {
     Book.find(function (err, books) {
         if (err) throw err;
 
-        response = { }
+        var etag = 0;
+        var response = { }
 
         for (var i = 0; i < books.length; i++) {
+            etag ^= books[i].etag;
             response[books[i].id] = books[i];
         }
 
+        res.setHeader('ETag', etag);
         res.json(response);
     });
 });
 
 app.post('/books/', function (req, res) {
-    // TODO
+    var book = new Book();
+
+    book.etag = crypto.randomBytes(4).readUInt32BE(0);
+    book.title = req.body.title;
+    book.authors = req.body.authors;
+    book.topic = req.body.topic;
+    book.keywords = req.body.keywords;
+    book.signature = req.body.signature;
+    book.location = req.body.location;
+    book.isbn = req.body.isbn;
+    book.year = Integer.parseInt(req.body.year, 10) || null;
+    book.publisher = req.body.publisher;
+    book.placeOfPublication = req.body.placeOfPublication;
+    book.volume = req.body.volume;
+    book.lendable = req.body.lendable;
+
+    book.save(function (err) {
+        if (err) {
+            res.send(400, err);
+        } else {
+            res.setHeader('ETag', book.etag);
+            res.send(book);
+        }
+    });
 });
 
 app.get('/books/:id/', function (req, res) {
@@ -163,7 +189,17 @@ app.put('/books/:id/', function (req, res) {
 
         book.etag = crypto.randomBytes(4).readUInt32BE(0);
         book.title = req.body.title;
-        // TODO
+        book.authors = req.body.authors;
+        book.topic = req.body.topic;
+        book.keywords = req.body.keywords;
+        book.signature = req.body.signature;
+        book.location = req.body.location;
+        book.isbn = req.body.isbn;
+        book.year = Integer.parseInt(req.body.year, 10) || null;
+        book.publisher = req.body.publisher;
+        book.placeOfPublication = req.body.placeOfPublication;
+        book.volume = req.body.volume;
+        book.lendable = req.body.lendable;
 
         book.save(function (err) {
             if (err) {
@@ -215,7 +251,7 @@ app.post('/books/:id/lending', function (req, res) {
 
         book.etag = crypto.randomBytes(4).readUInt32BE(0);
         book.lending.user = req.body.user;
-        book.lending.days = req.body.days;
+        book.lending.days = Integer.parseInt(req.body.days, 10) || 14;
 
         book.save(function (err) {
             if (err) {
