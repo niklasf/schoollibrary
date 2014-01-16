@@ -1,16 +1,28 @@
 #!/usr/bin/php
 <?php
 
+// Get arguments.
 if (empty($argv[1]) || empty($argv[2])) {
     exit;
 }
+$username = $argv[1];
+$password = $argv[2];
 
+// Remove hostname suffix from username.
+$hostname = trim(system("hostname -d"));
+if (!$hostname) {
+    $hostname = trim(system("hostname"));
+}
+$pattern = preg_quote('@' . $hostname);
+$username = preg_replace('/' . preg_quote('@' . $hostname) . '$/', '', $username);
+
+// Include IServ library.
 ini_set("include_path", ".:/usr/share/iserv/www/inc:/usr/share/php");
-
 require("sec/login.inc");
 
+// Try to authenticate.
 try {
-    if ($err = login($argv[1], $argv[2])) {
+    if ($err = login($username, $password)) {
         exit;
     }
 
