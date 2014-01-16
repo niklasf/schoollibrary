@@ -29,6 +29,8 @@ from PySide.QtNetwork import *
 
 import json
 
+import user
+
 class Application(QApplication):
     """The main application class of the schoollibrary client."""
 
@@ -39,11 +41,19 @@ class Application(QApplication):
         self.settings = QSettings("Schoollibrary")
         self.network = QNetworkAccessManager(self)
         self.login = LoginDialog(self)
+        self.users = user.UserListModel(self)
 
     def exec_(self):
         # Login.
         if not self.login.exec_():
             return 0
+
+        # Load data.
+        self.users.reload()
+
+        view = QListView()
+        view.setModel(self.users)
+        view.show()
 
         # Open the main window and run the event loop.
         mainWindow = MainWindow(self)
