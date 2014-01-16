@@ -86,6 +86,18 @@ class BookTableModel(QAbstractTableModel):
             if role == Qt.DisplayRole:
                 return self.cache.values()[section].id
 
+    def save(self, book):
+        """Saves a book to the server."""
+        params = QUrl()
+        params.addQueryItem("_csrf", self.app.login.csrf)
+        params.addQueryItem("isbn", book.isbn)
+        params.addQueryItem("title", book.title)
+        params.addQueryItem("authors", book.authors)
+
+        request = QNetworkRequest(self.app.login.getUrl("/books/"))
+        request.setHeader(QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
+        self.app.network.post(request, params.encodedQuery())
+
     def reload(self):
         request = QNetworkRequest(self.app.login.getUrl("/books/"))
         self.app.network.get(request)
@@ -94,18 +106,29 @@ class BookTableModel(QAbstractTableModel):
         if reply.request().url().path() != "/books/":
             return
 
-        books = json.loads(unicode(reply.readAll()))
+        print reply.request().attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        print reply.request().attribute(QNetworkRequest.CustomVerbAttribute)
+
+        blob = unicode(reply.readAll())
+        print blob
+
+        books = json.loads(blob)
+
+        if "_id" in books:
+            # TODO: ...
+            return
 
         self.beginResetModel()
         self.cache.clear()
 
         for data in books.values():
             book = Book()
-            book.id = int(data["id"])
+            book.id = int(data["_id"])
             book.title = data["title"]
             book.authors = data["authors"]
             book.isbn = data["isbn"]
             # TODO: More columns
+            self.cache[book.id] = book
 
         self.endResetModel()
 
@@ -167,6 +190,11 @@ class BookDialog(QDialog):
         grid.addWidget(QLabel(u"Veröffentlichungsort:"), 10, 0, Qt.AlignRight)
         self.placeOfPublicationBox = QLineEdit()
         grid.addWidget(self.placeOfPublicationBox, 10, 1)
+
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
+        buttonBox.accepted.connect(self.onSaveClicked)
+        buttonBox.rejected.connect(self.close)
+        grid.addWidget(buttonBox, 11, 1)
 
         self.setLayout(grid)
         self.setWindowFlags(self.windowFlags() &~ Qt.WindowContextHelpButtonHint)
