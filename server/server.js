@@ -10,6 +10,7 @@ mongoose.connect('mongodb://localhost/test');
 mongooseAutoIncrement.initialize(mongoose.connection);
 
 var bookSchema = mongoose.Schema({
+    etag: Number,
     title: String,
     authors: String,
     topic: String,
@@ -23,9 +24,9 @@ var bookSchema = mongoose.Schema({
     volume: Number,
     lendable: Boolean,
     lending: {
-        lentBy: String,
-        lentSince: Date,
-        lentForDays: Number
+        user: String,
+        since: Date,
+        days: Number
     }
 });
 
@@ -143,7 +144,8 @@ app.get('/books/:id/', function (req, res) {
             return res.send(404);
         }
 
-        res.json(book);
+        res.setHeader('ETag', book.etag);
+        res.send(book);
     });
 });
 
@@ -155,6 +157,11 @@ app.put('/books/:id/', function (req, res) {
             return res.send(404);
         }
 
+        if (req.body.etag && req.body.etag !== book.etag) {
+            return res.send(409);
+        }
+
+        book.etag = crypto.randomBytes(4).readUInt32BE(0);
         book.title = req.body.title;
         // TODO
 
@@ -163,17 +170,85 @@ app.put('/books/:id/', function (req, res) {
                 return res.send(400, err);
             }
 
+            res.setHeader('ETag', book.etag);
             res.send(book);
         });
     });
 });
 
+app.get('/books/:id/lending', function (req, res) {
+    Book.findById(req.params.id, function (err, book) {
+        if (err) throw err;
+
+        if (!book) {
+            return res.send(404);
+        }
+
+        if (!book.lending || !book.lending.user) {
+            return res.send(404);
+        }
+
+        res.setHeader('ETag', book.etag);
+        res.json(book.lending);
+    });
+});
+
 app.post('/books/:id/lending', function (req, res) {
-    // TODO
+    Book.findById(req.params.id, function (err, book) {
+        if (err) throw err;
+
+        if (!book) {
+            return res.send(404);
+        }
+
+        if (req.body.etag && req.body.etag !== book.etag) {
+            return res.send(409);
+        }
+
+        if (book.lending && book.lending.user && book.lending.user !== req.body.user) {
+            return res.send(412);
+        }
+
+        if (book.lending.user !== req.body.user) {
+            book.lending.since = new Date();
+        }
+
+        book.etag = crypto.randomBytes(4).readUInt32BE(0);
+        book.lending.user = req.body.user;
+        book.lending.days = req.body.days;
+
+        book.save(function (err) {
+            if (err) {
+                return res.send(400, err);
+            }
+
+            res.setHeader('ETag', book.etag);
+            res.json(book.lending);
+        });
+    });
 });
 
 app.delete('/books/:id/lending', function (req, res) {
-    // TODO
+    Book.findById(req.params.id, function (err, book) {
+        if (err) throw err;
+
+        if (!book) {
+            return res.send(404);
+        }
+
+        book.etag = crypto.randomBytes(4).readUInt32BE(0);
+        delete book.lending.user;
+        delete book.lending.since;
+        delete book.lending.days;
+
+        book.save(function (err) {
+            if (err) {
+                return res.send(400, err);
+            } else {
+                return res.send(204);
+            }
+        });
+    });
 });
 
 var port = parseInt(process.env.PORT) || 5000;
