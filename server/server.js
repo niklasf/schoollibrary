@@ -89,7 +89,7 @@ var bookSchema = mongoose.Schema({
 });
 
 bookSchema.pre('save', function (next) {
-    console.dir(this);
+    this.isbn = validator.isISBN(this.isbn);
     next();
 });
 
