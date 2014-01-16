@@ -41,7 +41,7 @@ app.use(express.urlencoded());
 app.use(connectBasicAuth(function (credentials, req, res, next) {
     req.groups = [];
 
-    var authProcess = childProcess.spawn('/etc/schoollibrary/auth.sh', [
+    var authProcess = childProcess.spawn('./auth.sh', [
         credentials.username,
         credentials.password
     ]);
@@ -102,7 +102,7 @@ app.get('/', function (req, res) {
 
 app.get('/users/', function (req, res) {
     res.setHeader('Content-Type', 'text/plain');
-    var users = childProcess.spawn('/etc/schoollibrary/users.sh');
+    var users = childProcess.spawn('./users.sh');
     users.stdout.pipe(res);
 });
 
