@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Client for a schoollibrary-server.
-# Copyright (c) 2013 Niklas Fiekas <niklas.fiekas@tu-clausthal.de>
+# Copyright (c) 2014 Niklas Fiekas <niklas.fiekas@tu-clausthal.de>
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
