@@ -5,6 +5,7 @@ var crypto = require('crypto');
 var connectBasicAuth = require('connect-basic-auth');
 var childProcess = require('child_process');
 var byline = require('byline');
+var validator = require('validator');
 
 mongoose.connect('mongodb://localhost/test');
 mongooseAutoIncrement.initialize(mongoose.connection);
@@ -24,14 +25,14 @@ var bookSchema = mongoose.Schema({
     volume: { type: String, default: '' },
     lendable: { type: Boolean, default: true },
     lending: {
-        user: String,
-        since: Date,
-        days: Number
+        user: { type: String, default: null, match: /[0-9A-Za-z\-\_\+\.]+@[0-9A-Za-z\-\_\.]+/ },
+        since: { type: Date, default: null },
+        days: { type: Number, default: null, min: 0 }
     }
 });
 
 bookSchema.virtual('lent').get(function () {
-    return this.lending && this.lending.user;
+    return !! (this.lending && this.lending.user);
 });
 
 bookSchema.plugin(mongooseAutoIncrement.plugin, 'Book');
@@ -141,6 +142,7 @@ app.get('/books/', function (req, res) {
 
         for (var i = 0; i < books.length; i++) {
             etag ^= books[i].etag;
+
             response[books[i].id] = books[i].toObject({ virtuals: true });
 
             if (!req.library_lend) {
@@ -304,12 +306,15 @@ app.post('/books/:id/lending', function (req, res) {
             return res.send(412);
         }
 
+        if (!req.body.user) {
+            return res.send(400);
+        }
+
         if (book.lending.user !== req.body.user) {
             book.lending.since = new Date();
         }
 
         book.etag = crypto.randomBytes(4).readUInt32BE(0);
-        // TODO: validate
         book.lending.user = req.body.user;
         book.lending.days = parseInt(req.body.days, 10) || 14;
 
@@ -341,9 +346,9 @@ app.delete('/books/:id/lending', function (req, res) {
         }
 
         book.etag = crypto.randomBytes(4).readUInt32BE(0);
-        delete book.lending.user;
-        delete book.lending.since;
-        delete book.lending.days;
+        book.lending.user = null;
+        book.lending.since = null;
+        book.lending.days = null;
 
         book.save(function (err) {
             if (err) {
