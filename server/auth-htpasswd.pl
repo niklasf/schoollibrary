@@ -10,6 +10,12 @@ if ($#ARGV != 1) {
 my $username = $ARGV[0];
 my $password = $ARGV[1];
 
+# Remove the local hostname suffix from the username.
+my $hostname = `hostname -d` || `hostname`;
+chop($hostname);
+my $pattern = quotemeta('@' . $hostname);
+$username =~ s/$pattern$//;
+
 # Check the password.
 my $user_found = 0;
 open my $htpasswd_fh, $HTPASSWD or exit;
