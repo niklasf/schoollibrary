@@ -77,8 +77,52 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.allBooksTable)
 
+        self.initActions()
+        self.initMenu()
+
         # Restore geometry.
         self.restoreGeometry(self.app.settings.value("MainWindowGeometry"))
+
+    def initActions(self):
+        """Creates actions."""
+        self.refreshAction = QAction("Daten aktualisieren", self)
+        self.refreshAction.setShortcut("F5")
+        self.refreshAction.triggered.connect(self.onRefreshAction)
+
+        self.aboutAction = QAction(u"Über ...", self)
+        self.aboutAction.setShortcut("F1")
+        self.aboutAction.triggered.connect(self.onAboutAction)
+
+        self.aboutQtAction = QAction(u"Über Qt ...", self)
+        self.aboutQtAction.triggered.connect(self.onAboutQtAction)
+
+        self.quitAction = QAction("Beenden", self)
+        self.quitAction.setShortcut("Ctrl+C")
+        self.quitAction.triggered.connect(self.close)
+
+    def initMenu(self):
+        """Creates the main menu."""
+        mainMenu = self.menuBar().addMenu("Bibliothek")
+        mainMenu.addAction(self.refreshAction)
+        mainMenu.addSeparator()
+        mainMenu.addAction(self.aboutAction)
+        mainMenu.addAction(self.aboutQtAction)
+        mainMenu.addSeparator()
+        mainMenu.addAction(self.quitAction)
+
+    def onRefreshAction(self):
+        """Handles the refresh action."""
+        self.app.users.reload()
+        self.app.books.reload()
+
+    def onAboutAction(self):
+        """Handles the about action."""
+        QMessageBox.about(self, u"Schoollibrary %s" % __version__,
+            "<h1>Schoollibrary %s</h1>%s &lt;<a href=\"mailto:%s\">%s</a>&gt;" % (__version__, __author__, __email__, __email__))
+
+    def onAboutQtAction(self):
+        """Handles the about Qt action."""
+        QMessageBox.aboutQt(self, u"Schoollibrary %s" % __version__)
 
     def closeEvent(self, event):
         """Saves the geometry when the window is closed."""
