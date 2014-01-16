@@ -8,7 +8,7 @@ var byline = require('byline');
 var validator = require('validator');
 var fs = require('fs');
 
-mongoose.connect('mongodb://localhost/test');
+mongoose.connect('mongodb://localhost/schoollibrary');
 mongooseAutoIncrement.initialize(mongoose.connection);
 
 var bookSchema = mongoose.Schema({
