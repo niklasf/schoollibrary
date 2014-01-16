@@ -150,7 +150,8 @@ class MainWindow(QMainWindow):
 
     def onAddBookAction(self):
         """Handles the add book action."""
-        pass
+        dialog = book.BookDialog(self.app, None, self)
+        dialog.show()
 
     def closeEvent(self, event):
         """Saves the geometry when the window is closed."""
