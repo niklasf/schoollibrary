@@ -79,14 +79,18 @@ class MainWindow(QMainWindow):
 
         self.initActions()
         self.initMenu()
+        self.initToolBar()
 
         # Restore geometry.
         self.restoreGeometry(self.app.settings.value("MainWindowGeometry"))
 
     def initActions(self):
         """Creates actions."""
+        style = self.style()
+
         self.refreshAction = QAction("Daten aktualisieren", self)
         self.refreshAction.setShortcut("F5")
+        self.refreshAction.setIcon(style.standardIcon(QStyle.SP_BrowserReload))
         self.refreshAction.triggered.connect(self.onRefreshAction)
 
         self.aboutAction = QAction(u"Über ...", self)
@@ -100,6 +104,11 @@ class MainWindow(QMainWindow):
         self.quitAction.setShortcut("Ctrl+C")
         self.quitAction.triggered.connect(self.close)
 
+        self.addBookAction = QAction(u"Buch hinzufügen", self)
+        self.addBookAction.setShortcut("Ctrl+N")
+        self.addBookAction.setIcon(style.standardIcon(QStyle.SP_ArrowUp))
+        self.addBookAction.triggered.connect(self.onAddBookAction)
+
     def initMenu(self):
         """Creates the main menu."""
         mainMenu = self.menuBar().addMenu("Bibliothek")
@@ -109,6 +118,16 @@ class MainWindow(QMainWindow):
         mainMenu.addAction(self.aboutQtAction)
         mainMenu.addSeparator()
         mainMenu.addAction(self.quitAction)
+
+        bookMenu = self.menuBar().addMenu(u"Bücher")
+        bookMenu.addAction(self.addBookAction)
+
+    def initToolBar(self):
+        """Creates the toolbar."""
+        toolBar = self.addToolBar("Test")
+        toolBar.addAction(self.addBookAction)
+        toolBar.addSeparator()
+        toolBar.addAction(self.refreshAction)
 
     def onRefreshAction(self):
         """Handles the refresh action."""
@@ -123,6 +142,10 @@ class MainWindow(QMainWindow):
     def onAboutQtAction(self):
         """Handles the about Qt action."""
         QMessageBox.aboutQt(self, u"Schoollibrary %s" % __version__)
+
+    def onAddBookAction(self):
+        """Handles the add book action."""
+        pass
 
     def closeEvent(self, event):
         """Saves the geometry when the window is closed."""
