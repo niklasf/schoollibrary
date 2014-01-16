@@ -6,6 +6,7 @@ var connectBasicAuth = require('connect-basic-auth');
 var childProcess = require('child_process');
 var byline = require('byline');
 var validator = require('validator');
+var fs = require('fs');
 
 mongoose.connect('mongodb://localhost/test');
 mongooseAutoIncrement.initialize(mongoose.connection);
@@ -111,6 +112,15 @@ bookSchema.plugin(mongooseAutoIncrement.plugin, 'Book');
 
 var Book = mongoose.model('Book', bookSchema);
 
+var authHook = '/etc/schoollibrary/auth.sh';
+if (fs.existsSync('auth.sh')) {
+    authHook = './auth.sh';
+}
+var usersHook = '/etc/schoollibrary/users.sh';
+if (fs.existsSync('users.sh')) {
+    usersHook = './users.sh';
+}
+
 var app = express();
 app.use(express.logger());
 app.use(express.json());
@@ -119,7 +129,7 @@ app.use(express.urlencoded());
 app.use(connectBasicAuth(function (credentials, req, res, next) {
     req.groups = [];
 
-    var authProcess = childProcess.spawn('./auth.sh', [
+    var authProcess = childProcess.spawn(authHook, [
         credentials.username,
         credentials.password
     ]);
@@ -201,7 +211,7 @@ app.get('/users/', function (req, res) {
     }
 
     res.setHeader('Content-Type', 'text/plain');
-    var users = childProcess.spawn('./users.sh');
+    var users = childProcess.spawn(usersHook);
     users.stdout.pipe(res);
 });
 
