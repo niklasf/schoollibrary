@@ -2,7 +2,7 @@
 
 # Client for a schoollibrary-server.
 # Copyright (c) 2014 Niklas Fiekas <niklas.fiekas@tu-clausthal.de>
-
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#
+
 # Client for a schoollibrary-server.
 # Copyright (c) 2014 Niklas Fiekas <niklas.fiekas@tu-clausthal.de>
 #
