@@ -76,7 +76,7 @@ class BookTableModel(QAbstractTableModel):
                 return book.title
         elif role == util.TitleAndDescriptionDelegate.DescriptionRole:
             if index.column() == 0:
-                return book.author
+                return book.authors
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:

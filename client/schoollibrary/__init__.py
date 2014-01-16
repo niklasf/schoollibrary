@@ -29,8 +29,9 @@ from PySide.QtNetwork import *
 
 import json
 
-import user
 import book
+import user
+import util
 
 class Application(QApplication):
     """The main application class of the schoollibrary client."""
@@ -87,6 +88,9 @@ class MainWindow(QMainWindow):
 
         self.allBooksTable = QTableView()
         self.allBooksTable.setModel(self.app.books)
+        self.allBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
+        self.allBooksTable.setItemDelegateForColumn(0, self.allBooksTable.titleAndDescriptionDelegate)
+        self.allBooksTable.setColumnWidth(0, 500)
         self.tabs.addTab(self.allBooksTable, u"Alle Bücher")
 
     def initActions(self):

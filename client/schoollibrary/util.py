@@ -19,6 +19,8 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 
+import rendering
+
 class TitleAndDescriptionDelegate(QItemDelegate):
     """A delegate for displaying read only rich text."""
 
