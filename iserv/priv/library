@@ -1,0 +1,19 @@
+library_modify:
+module      Library
+description Add and modify books
+assign      admins
+
+library_delete:
+module      Library
+description Delete books
+assign      admins
+
+library_admin:
+module      Library
+description Administer library
+assign      admins
+
+library_lend:
+module      Library
+description Hand out and take back books
+assign      admins
