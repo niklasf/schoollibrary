@@ -11,24 +11,86 @@ mongoose.connect('mongodb://localhost/test');
 mongooseAutoIncrement.initialize(mongoose.connection);
 
 var bookSchema = mongoose.Schema({
-    etag: { type: Number, required: true },
-    title: { type: String, required: true },
-    authors: { type: String, default: '' },
-    topic: { type: String, default: '' },
-    keywords: { type: String, default: '' },
-    signature: { type: String, default: '' },
-    location: { type: String, default: '' },
-    isbn: { type: String, default: '' },
-    year: { type: Number },
-    publisher: { type: String, default: '' },
-    placeOfPublication: { type: String, default: '' },
-    volume: { type: String, default: '' },
-    lendable: { type: Boolean, default: true },
+    etag: {
+        type: Number,
+        required: true
+    },
+    title: {
+        type: String,
+        required: true
+    },
+    authors: {
+        type: String,
+        default: ''
+    },
+    topic: {
+        type: String,
+        default: ''
+    },
+    keywords: {
+        type: String,
+        default: ''
+    },
+    signature: {
+        type: String,
+        default: ''
+    },
+    location: {
+        type: String,
+        default: ''
+    },
+    isbn: {
+        type: String,
+        default: '',
+        validate: function (isbn) {
+            if (!isbn) {
+                return true;
+            } else {
+                return validator.isISBN(isbn);
+            }
+        }
+    },
+    year: {
+        type: Number,
+        default: null
+    },
+    publisher: {
+        type: String,
+        default: ''
+    },
+    placeOfPublication: {
+        type: String,
+        default: ''
+    },
+    volume: {
+        type: String,
+        default: ''
+    },
+    lendable: {
+        type: Boolean,
+        default: true
+    },
     lending: {
-        user: { type: String, default: null, match: /[0-9A-Za-z\-\_\+\.]+@[0-9A-Za-z\-\_\.]+/ },
-        since: { type: Date, default: null },
-        days: { type: Number, default: null, min: 0 }
+        user: {
+            type: String,
+            default: null,
+            match: /[0-9A-Za-z\-\_\+\.]+@[0-9A-Za-z\-\_\.]+/
+        },
+        since: {
+            type: Date,
+            default: null
+        },
+        days: {
+            type: Number,
+            default: null,
+            min: 0
+        }
     }
+});
+
+bookSchema.pre('save', function (next) {
+    console.dir(this);
+    next();
 });
 
 bookSchema.virtual('lent').get(function () {
@@ -213,7 +275,7 @@ app.put('/books/:id/', function (req, res) {
             return res.send(404);
         }
 
-        if (!req.library_modfiy) {
+        if (!req.library_modify) {
             return res.send(403);
         }
 
