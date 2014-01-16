@@ -240,6 +240,25 @@ app.put('/books/:id/', function (req, res) {
     });
 });
 
+app.delete('/books/:id/', function (req, res) {
+    Book.findById(req.params.id, function (err, book) {
+        if (err) throw err;
+
+        if (!book) {
+            return res.send(404);
+        }
+
+        if (!req.library_delete) {
+            return res.send(403);
+        }
+
+        book.remove(function (err, book) {
+            if (err) throw err;
+            return res.send(204);
+        });
+    });
+});
+
 app.get('/books/:id/lending', function (req, res) {
     if (!req.library_lend) {
         return res.send(403);
