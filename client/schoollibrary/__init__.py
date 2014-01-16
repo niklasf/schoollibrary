@@ -30,6 +30,7 @@ from PySide.QtNetwork import *
 import json
 
 import user
+import book
 
 class Application(QApplication):
     """The main application class of the schoollibrary client."""
@@ -42,6 +43,7 @@ class Application(QApplication):
         self.network = QNetworkAccessManager(self)
         self.login = LoginDialog(self)
         self.users = user.UserListModel(self)
+        self.books = book.BookTableModel(self)
 
     def exec_(self):
         # Login.
@@ -50,6 +52,7 @@ class Application(QApplication):
 
         # Load data.
         self.users.reload()
+        self.books.reload()
 
         view = QListView()
         view.setModel(self.users)
@@ -68,6 +71,14 @@ class MainWindow(QMainWindow):
         self.app = app
 
         self.setWindowTitle("Schulbibliothek")
+
+        self.allBooksTable = QTableView()
+        self.allBooksTable.setModel(self.app.books)
+
+        self.setCentralWidget(self.allBooksTable)
+
+        # Restore geometry.
+        self.restoreGeometry(self.app.settings.value("MainWindowGeometry"))
 
     def closeEvent(self, event):
         """Saves the geometry when the window is closed."""
