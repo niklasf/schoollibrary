@@ -72,17 +72,22 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Schulbibliothek")
 
-        self.allBooksTable = QTableView()
-        self.allBooksTable.setModel(self.app.books)
-
-        self.setCentralWidget(self.allBooksTable)
-
+        self.initUi()
         self.initActions()
         self.initMenu()
         self.initToolBar()
 
         # Restore geometry.
         self.restoreGeometry(self.app.settings.value("MainWindowGeometry"))
+
+    def initUi(self):
+        """Creates the central tab widget."""
+        self.tabs = QTabWidget()
+        self.setCentralWidget(self.tabs)
+
+        self.allBooksTable = QTableView()
+        self.allBooksTable.setModel(self.app.books)
+        self.tabs.addTab(self.allBooksTable, u"Alle Bücher")
 
     def initActions(self):
         """Creates actions."""
