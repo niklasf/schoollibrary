@@ -17,31 +17,38 @@ var bookSchema = mongoose.Schema({
     },
     title: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     authors: {
         type: String,
-        default: ''
+        default: '',
+        trim: true
     },
     topic: {
         type: String,
-        default: ''
+        default: '',
+        trim: true
     },
     keywords: {
         type: String,
-        default: ''
+        default: '',
+        trim: true
     },
     signature: {
         type: String,
-        default: ''
+        default: '',
+        trim: true
     },
     location: {
         type: String,
-        default: ''
+        default: '',
+        trim: true
     },
     isbn: {
         type: String,
         default: '',
+        trim: true,
         validate: function (isbn) {
             if (!isbn) {
                 return true;
@@ -56,15 +63,18 @@ var bookSchema = mongoose.Schema({
     },
     publisher: {
         type: String,
-        default: ''
+        default: '',
+        trim: true
     },
     placeOfPublication: {
         type: String,
-        default: ''
+        default: '',
+        trim: true
     },
     volume: {
         type: String,
-        default: ''
+        default: '',
+        trim: true
     },
     lendable: {
         type: Boolean,
