@@ -70,6 +70,12 @@ app.all('*', function (req, res, next) {
 
 app.all('*', (function () {
     var secret = crypto.randomBytes(64);
+    var oldSecret = crypto.randomBytes(64);
+
+    setInterval(function () {
+        oldSecret = secret;
+        secret = crypto.randomBytes(64);
+    }, 1000 * 60 * 60 * 24);
 
     return function (req, res, next) {
         req.csrf = crypto.createHmac('sha256', secret)
@@ -85,7 +91,11 @@ app.all('*', (function () {
             || req.headers['x-csrf-token']
             || req.headers['x-xsrf-token'];
 
-        if (token && token === req.csrf) {
+        var oldCsrf = crypto.createHmac('sha256', secret)
+            .update(req.user)
+            .digest('hex');
+
+        if (token && (token === req.csrf || token === oldCsrf)) {
             next();
         } else {
             return res.send(403);
