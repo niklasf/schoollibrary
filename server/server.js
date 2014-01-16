@@ -58,6 +58,12 @@ app.use(connectBasicAuth(function (credentials, req, res, next) {
     authProcess.on('close', function () {
         if (req.groups.length) {
             req.user = credentials.username;
+
+            req.library_admin = req.groups.indexOf('library_admin') !== -1;
+            req.library_modify = req.library_admin || req.groups.indexOf('library_modfiy') !== -1;
+            req.library_delete = req.library_admin || req.groups.indexOf('library_delete') !== -1;
+            req.library_lend = req.library_admin || req.groups.indexOf('library_lend') !== -1;
+
             next();
         } else {
             next('Authentication required');
@@ -99,7 +105,7 @@ app.all('*', (function () {
         if (token && (token === req.csrf || token === oldCsrf)) {
             next();
         } else {
-            return res.send(403);
+            return res.send(419);
         }
     };
 })());
@@ -113,6 +119,10 @@ app.get('/', function (req, res) {
 });
 
 app.get('/users/', function (req, res) {
+    if (!req.library_lend) {
+        return res.send(403);
+    }
+
     res.setHeader('Content-Type', 'text/plain');
     var users = childProcess.spawn('./users.sh');
     users.stdout.pipe(res);
@@ -127,7 +137,11 @@ app.get('/books/', function (req, res) {
 
         for (var i = 0; i < books.length; i++) {
             etag ^= books[i].etag;
-            response[books[i].id] = books[i];
+            response[books[i].id] = books[i].toObject({ virtuals: true });
+
+            if (!req.library_lend) {
+                delete response[books[i].id].lending;
+            }
         }
 
         res.setHeader('ETag', etag);
@@ -136,6 +150,10 @@ app.get('/books/', function (req, res) {
 });
 
 app.post('/books/', function (req, res) {
+    if (!req.library_modify) {
+        return res.send(403);
+    }
+
     var book = new Book();
 
     book.etag = crypto.randomBytes(4).readUInt32BE(0);
@@ -146,7 +164,7 @@ app.post('/books/', function (req, res) {
     book.signature = req.body.signature;
     book.location = req.body.location;
     book.isbn = req.body.isbn;
-    book.year = Integer.parseInt(req.body.year, 10) || null;
+    book.year = parseInt(req.body.year, 10) || null;
     book.publisher = req.body.publisher;
     book.placeOfPublication = req.body.placeOfPublication;
     book.volume = req.body.volume;
@@ -170,12 +188,22 @@ app.get('/books/:id/', function (req, res) {
             return res.send(404);
         }
 
+        var response = book.toObject({ virtuals: true });
+
+        if (!req.library_lend) {
+            delete response.lending;
+        }
+
         res.setHeader('ETag', book.etag);
-        res.send(book);
+        res.json(response);
     });
 });
 
 app.put('/books/:id/', function (req, res) {
+    if (!req.library_modify) {
+        return res.send(403);
+    }
+
     Book.findById(req.params.id, function (err, book) {
         if (err) throw err;
 
@@ -195,7 +223,7 @@ app.put('/books/:id/', function (req, res) {
         book.signature = req.body.signature;
         book.location = req.body.location;
         book.isbn = req.body.isbn;
-        book.year = Integer.parseInt(req.body.year, 10) || null;
+        book.year = parseInt(req.body.year, 10) || null;
         book.publisher = req.body.publisher;
         book.placeOfPublication = req.body.placeOfPublication;
         book.volume = req.body.volume;
@@ -213,6 +241,10 @@ app.put('/books/:id/', function (req, res) {
 });
 
 app.get('/books/:id/lending', function (req, res) {
+    if (!req.library_lend) {
+        return res.send(403);
+    }
+
     Book.findById(req.params.id, function (err, book) {
         if (err) throw err;
 
@@ -230,6 +262,10 @@ app.get('/books/:id/lending', function (req, res) {
 });
 
 app.post('/books/:id/lending', function (req, res) {
+    if (!req.library_lend) {
+        return res.send(403);
+    }
+
     Book.findById(req.params.id, function (err, book) {
         if (err) throw err;
 
@@ -251,7 +287,7 @@ app.post('/books/:id/lending', function (req, res) {
 
         book.etag = crypto.randomBytes(4).readUInt32BE(0);
         book.lending.user = req.body.user;
-        book.lending.days = Integer.parseInt(req.body.days, 10) || 14;
+        book.lending.days = parseInt(req.body.days, 10) || 14;
 
         book.save(function (err) {
             if (err) {
@@ -265,6 +301,10 @@ app.post('/books/:id/lending', function (req, res) {
 });
 
 app.delete('/books/:id/lending', function (req, res) {
+    if (!req.library_lend) {
+        return res.send(403);
+    }
+
     Book.findById(req.params.id, function (err, book) {
         if (err) throw err;
 
