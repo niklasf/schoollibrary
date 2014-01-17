@@ -30,13 +30,13 @@ class Book(object):
 
     def __init__(self):
         self.id = 0
+        self.isbn = ""
         self.title = ""
         self.authors = ""
         self.topic = ""
         self.keywords = ""
         self.signature = ""
         self.location = ""
-        self.isbn = ""
         self.year = None
         self.publisher = ""
         self.placeOfPublication = ""
@@ -85,7 +85,21 @@ class BookTableModel(QAbstractTableModel):
                     return "Buch"
         else:
             if role == Qt.DisplayRole:
-                return self.cache.values()[section].id
+                book = self.cache.values()[section]
+                lines = []
+
+                if book.signature:
+                    lines.append(book.signature)
+
+                lines.append(str(book.id))
+
+                if book.location:
+                    lines.append(book.location)
+
+                return "\n".join(lines)
+
+            elif role == Qt.TextAlignmentRole:
+                return Qt.AlignCenter
 
     def save(self, book):
         """Saves a book to the server."""
@@ -94,6 +108,18 @@ class BookTableModel(QAbstractTableModel):
         params.addQueryItem("isbn", book.isbn)
         params.addQueryItem("title", book.title)
         params.addQueryItem("authors", book.authors)
+        params.addQueryItem("topic", book.topic)
+        params.addQueryItem("keywords", book.keywords)
+        params.addQueryItem("signature", book.signature)
+        params.addQueryItem("location", book.location)
+
+        if book.year:
+            params.addQueryItem("year", str(book.year))
+
+        params.addQueryItem("publisher", book.publisher)
+        params.addQueryItem("placeOfPublication", book.placeOfPublication)
+        params.addQueryItem("volume", book.volume)
+        params.addQueryItem("lendable", "true" if book.lendable else "false")
 
         request = QNetworkRequest(self.app.login.getUrl("/books/"))
         request.setHeader(QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
@@ -124,11 +150,26 @@ class BookTableModel(QAbstractTableModel):
 
         for data in books.values():
             book = Book()
+
             book.id = int(data["_id"])
+            book.isbn = data["isbn"]
             book.title = data["title"]
             book.authors = data["authors"]
-            book.isbn = data["isbn"]
-            # TODO: More columns
+            book.volume = data["volume"]
+            book.topic = data["topic"]
+            book.keywords = data["keywords"]
+            book.signature = data["signature"]
+            book.location = data["location"]
+            book.year = int(data["year"]) if data["year"] else None
+            book.publisher = data["publisher"]
+            book.placeOfPublication = data["placeOfPublication"]
+            book.lent = bool(data["lent"])
+
+            if book.lent:
+                book.lendingUser = data["lending"]["user"]
+                book.lendingSince = data["lending"]["since"]
+                book.lendingDays = data["lending"]["days"]
+
             self.cache[book.id] = book
 
         self.endResetModel()
@@ -148,54 +189,58 @@ class BookDialog(QDialog):
         """Initializes the user interface."""
         grid = QGridLayout()
 
-        grid.addWidget(QLabel("ISBN:"), 0, 0, Qt.AlignRight)
+        grid.addWidget(QLabel("ID:"), 0, 0, Qt.AlignRight)
+        self.idBox = QLabel()
+        grid.addWidget(self.idBox, 0, 1)
+
+        grid.addWidget(QLabel("ISBN:"), 1, 0, Qt.AlignRight)
         self.isbnBox = QLineEdit()
-        grid.addWidget(self.isbnBox, 0, 1)
+        grid.addWidget(self.isbnBox, 1, 1)
 
-        grid.addWidget(QLabel("Titel:"), 1, 0, Qt.AlignRight)
+        grid.addWidget(QLabel("Titel:"), 2, 0, Qt.AlignRight)
         self.titleBox = QLineEdit()
-        grid.addWidget(self.titleBox, 1, 1)
+        grid.addWidget(self.titleBox, 2, 1)
 
-        grid.addWidget(QLabel("Autoren:"), 2, 0, Qt.AlignRight)
+        grid.addWidget(QLabel("Autoren:"), 3, 0, Qt.AlignRight)
         self.authorsBox = QLineEdit()
-        grid.addWidget(self.authorsBox, 2, 1)
+        grid.addWidget(self.authorsBox, 3, 1)
 
-        grid.addWidget(QLabel("Band:"), 3, 0, Qt.AlignRight)
+        grid.addWidget(QLabel("Band:"), 4, 0, Qt.AlignRight)
         self.volumeBox = QLineEdit()
-        grid.addWidget(self.volumeBox, 3, 1)
+        grid.addWidget(self.volumeBox, 4, 1)
 
-        grid.addWidget(QLabel("Thema:"), 4, 0, Qt.AlignRight)
+        grid.addWidget(QLabel("Thema:"), 5, 0, Qt.AlignRight)
         self.topicBox = QLineEdit()
-        grid.addWidget(self.topicBox, 4, 1)
+        grid.addWidget(self.topicBox, 5, 1)
 
-        grid.addWidget(QLabel(u"Schlüsselwörter:"), 5, 0, Qt.AlignRight)
+        grid.addWidget(QLabel(u"Schlüsselwörter:"), 6, 0, Qt.AlignRight)
         self.keywordsBox = QLineEdit()
-        grid.addWidget(self.keywordsBox, 5, 1)
+        grid.addWidget(self.keywordsBox, 6, 1)
 
-        grid.addWidget(QLabel("Signatur:"), 6, 0, Qt.AlignRight)
+        grid.addWidget(QLabel("Signatur:"), 7, 0, Qt.AlignRight)
         self.signatureBox = QLineEdit()
-        grid.addWidget(self.signatureBox, 6, 1)
+        grid.addWidget(self.signatureBox, 7, 1)
 
-        grid.addWidget(QLabel("Standort:"), 7, 0, Qt.AlignRight)
+        grid.addWidget(QLabel("Standort:"), 8, 0, Qt.AlignRight)
         self.locationBox = QLineEdit()
-        grid.addWidget(self.locationBox, 7, 1)
+        grid.addWidget(self.locationBox, 8, 1)
 
-        grid.addWidget(QLabel("Jahr:"), 8, 0, Qt.AlignRight)
+        grid.addWidget(QLabel("Jahr:"), 9, 0, Qt.AlignRight)
         self.yearBox = QLineEdit()
-        grid.addWidget(self.yearBox, 8, 1)
+        grid.addWidget(self.yearBox, 9, 1)
 
-        grid.addWidget(QLabel("Verlag:"), 9, 0, Qt.AlignRight)
+        grid.addWidget(QLabel("Verlag:"), 10, 0, Qt.AlignRight)
         self.publisherBox = QLineEdit()
-        grid.addWidget(self.publisherBox, 9, 1)
+        grid.addWidget(self.publisherBox, 10, 1)
 
-        grid.addWidget(QLabel(u"Veröffentlichungsort:"), 10, 0, Qt.AlignRight)
+        grid.addWidget(QLabel(u"Veröffentlichungsort:"), 11, 0, Qt.AlignRight)
         self.placeOfPublicationBox = QLineEdit()
-        grid.addWidget(self.placeOfPublicationBox, 10, 1)
+        grid.addWidget(self.placeOfPublicationBox, 11, 1)
 
         buttonBox = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         buttonBox.accepted.connect(self.onSaveClicked)
         buttonBox.rejected.connect(self.close)
-        grid.addWidget(buttonBox, 11, 1)
+        grid.addWidget(buttonBox, 12, 1)
 
         self.setLayout(grid)
         self.setWindowFlags(self.windowFlags() &~ Qt.WindowContextHelpButtonHint)
@@ -204,8 +249,10 @@ class BookDialog(QDialog):
         """Initialize the displayed values according to the book."""
         if self.book:
             self.setWindowTitle("Buch: %s" % self.book.title)
+            self.idBox.setText(self.book.id)
         else:
             self.setWindowTitle("Neues Buch")
+            self.idBox.setText("automatisch")
             self.book = Book()
 
         self.isbnBox.setText(self.book.isbn)
@@ -227,9 +274,30 @@ class BookDialog(QDialog):
                 u"Es muss ein Titel angegeben werden.")
             return False
 
+        # TODO: Validate year
+        # TODO: Validate ISBN
+
         self.book.isbn = self.isbnBox.text().strip()
         self.book.title = self.titleBox.text().strip()
         self.book.authors = self.authorsBox.text().strip()
+        self.book.topic = self.topicBox.text().strip()
+        self.book.keywords = self.keywordsBox.text().strip()
+        self.book.signature = self.signatureBox.text().strip()
+        self.book.location = self.locationBox.text().strip()
+
+        year = self.yearBox.text().strip()
+        if year:
+            self.book.year = int(year)
+        else:
+            self.book.year = None
+
+        self.book.publisher = self.publisherBox.text().strip()
+        self.book.placeOfPublication = self.placeOfPublicationBox.text().strip()
+        self.book.volume = self.volumeBox.text().strip()
+
+        # TODO
+        self.book.lendable = True
+
         self.app.books.save(self.book)
         return True
 
