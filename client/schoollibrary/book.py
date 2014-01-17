@@ -30,17 +30,18 @@ class Book(object):
 
     def __init__(self):
         self.id = 0
-        self.isbn = ""
+        self.signature = ""
+        self.location = ""
         self.title = ""
         self.authors = ""
         self.topic = ""
+        self.volume = ""
         self.keywords = ""
-        self.signature = ""
-        self.location = ""
-        self.year = None
         self.publisher = ""
         self.placeOfPublication = ""
-        self.volume = ""
+        self.year = None
+        self.isbn = ""
+        self.edition = ""
         self.lendable = True
         self.lendingUser = None
         self.lendingSince = None
@@ -66,7 +67,7 @@ class BookTableModel(QAbstractTableModel):
         return len(self.cache)
 
     def columnCount(self, parent=QModelIndex()):
-        return 1
+        return 9
 
     def data(self, index, role=Qt.DisplayRole):
         book = index.internalPointer()
@@ -74,15 +75,50 @@ class BookTableModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             if index.column() == 0:
                 return book.title
+            elif index.column() == 1:
+                return book.topic
+            elif index.column() == 2:
+                return book.volume
+            elif index.column() == 3:
+                return book.publisher
+            elif index.column() == 4:
+                return book.placeOfPublication
+            elif index.column() == 5:
+                return book.year
+            elif index.column() == 6:
+                return book.keywords
+            elif index.column() == 7:
+                return book.isbn
+            elif index.column() == 8:
+                return book.edition
         elif role == util.TitleAndDescriptionDelegate.DescriptionRole:
             if index.column() == 0:
                 return book.authors
+        elif role == Qt.TextAlignmentRole:
+            if index.column() in (2, 5, 7):
+                return Qt.AlignCenter
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
                 if section == 0:
                     return "Buch"
+                elif section == 1:
+                    return "Thema"
+                elif section == 2:
+                    return "Band"
+                elif section == 3:
+                    return "Verlag"
+                elif section == 4:
+                    return "Erscheinungsort"
+                elif section == 5:
+                    return "Jahr"
+                elif section == 6:
+                    return u"Schlüsselwörter"
+                elif section == 7:
+                    return "ISBN"
+                elif section == 8:
+                    return "Auflage"
         else:
             if role == Qt.DisplayRole:
                 book = self.cache.values()[section]

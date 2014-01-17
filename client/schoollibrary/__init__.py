@@ -90,8 +90,13 @@ class MainWindow(QMainWindow):
         self.allBooksTable.setModel(self.app.books)
         self.allBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
         self.allBooksTable.setItemDelegateForColumn(0, self.allBooksTable.titleAndDescriptionDelegate)
-        self.allBooksTable.setColumnWidth(0, 500)
+        self.allBooksTable.model().modelReset.connect(self.onBooksReset)
         self.tabs.addTab(self.allBooksTable, u"Alle Bücher")
+
+    def onBooksReset(self):
+        self.allBooksTable.resizeColumnsToContents()
+        self.allBooksTable.setColumnWidth(0, 400)
+        self.allBooksTable.resizeRowsToContents()
 
     def initActions(self):
         """Creates actions."""
@@ -115,7 +120,7 @@ class MainWindow(QMainWindow):
 
         self.addBookAction = QAction(u"Buch hinzufügen", self)
         self.addBookAction.setShortcut("Ctrl+N")
-        self.addBookAction.setIcon(style.standardIcon(QStyle.SP_ArrowUp))
+        self.addBookAction.setIcon(QIcon("data/address_book_add_32.png"))
         self.addBookAction.triggered.connect(self.onAddBookAction)
 
     def initMenu(self):
