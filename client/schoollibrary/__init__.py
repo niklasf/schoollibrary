@@ -152,6 +152,8 @@ class MainWindow(QMainWindow):
     def initToolBar(self):
         """Creates the toolbar."""
         toolBar = self.addToolBar("Test")
+        toolBar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+
         toolBar.addAction(self.addBookAction)
         toolBar.addSeparator()
         toolBar.addAction(self.refreshAction)
