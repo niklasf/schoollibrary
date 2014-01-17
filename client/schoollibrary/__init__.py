@@ -83,15 +83,28 @@ class MainWindow(QMainWindow):
 
     def initUi(self):
         """Creates the central tab widget."""
+        centralWidget = QWidget()
+        centralLayout = QHBoxLayout()
+        centralWidget.setLayout(centralLayout)
+        self.setCentralWidget(centralWidget)
+
         self.tabs = QTabWidget()
-        self.setCentralWidget(self.tabs)
+        centralLayout.addWidget(self.tabs)
 
         self.allBooksTable = QTableView()
         self.allBooksTable.setModel(self.app.books)
         self.allBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
         self.allBooksTable.setItemDelegateForColumn(0, self.allBooksTable.titleAndDescriptionDelegate)
         self.allBooksTable.model().modelReset.connect(self.onBooksReset)
-        self.tabs.addTab(self.allBooksTable, u"Alle Bücher")
+        self.addTab(u"Alle Bücher", self.allBooksTable)
+
+    def addTab(self, title, widget):
+        page = QWidget()
+        layout = QHBoxLayout()
+
+        page.setLayout(layout)
+        layout.addWidget(widget)
+        return self.tabs.addTab(page, title)
 
     def onBooksReset(self):
         self.allBooksTable.resizeColumnsToContents()
