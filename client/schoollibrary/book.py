@@ -348,6 +348,9 @@ class BookDialog(QDialog):
         self.placeOfPublicationBox = QLineEdit()
         form.addRow(u"Veröffentlichungsort:", self.placeOfPublicationBox)
 
+        self.lendableBox = QCheckBox()
+        form.addRow("Ausleihbar:", self.lendableBox)
+
         buttonBox = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         buttonBox.accepted.connect(self.onSaveClicked)
         buttonBox.rejected.connect(self.close)
@@ -371,6 +374,15 @@ class BookDialog(QDialog):
         self.isbnBox.setText(self.book.isbn)
         self.titleBox.setText(self.book.title)
         self.authorsBox.setText(self.book.authors)
+        self.volumeBox.setText(self.book.volume)
+        self.topicBox.setText(self.book.topic)
+        self.keywordsBox.setText(self.book.keywords)
+        self.signatureBox.setText(self.book.signature)
+        self.locationBox.setText(self.book.location)
+        self.yearBox.setText(str(self.book.year) if self.book.year else "")
+        self.publisherBox.setText(self.book.publisher)
+        self.placeOfPublicationBox.setText(self.book.placeOfPublication)
+        self.lendableBox.setChecked(self.book.lendable)
 
     def initProgressSpinner(self):
         """Initialize a progress indicator."""
@@ -406,7 +418,7 @@ class BookDialog(QDialog):
         params.addQueryItem("publisher", self.publisherBox.text())
         params.addQueryItem("placeOfPublication", self.placeOfPublicationBox.text())
         params.addQueryItem("volume", self.volumeBox.text())
-        params.addQueryItem("lendable", "true")
+        params.addQueryItem("lendable", "true" if self.lendableBox.isChecked() else "false")
 
         if not self.book.id:
             request = QNetworkRequest(self.app.login.getUrl("/books/"))
