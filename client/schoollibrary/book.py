@@ -401,7 +401,10 @@ class BookDialog(QDialog):
             request.setHeader(QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
             self.ticket = self.app.network.http("POST", request, params.encodedQuery())
         else:
-            assert False
+            path = "/books/%d/" % self.book.id
+            request = QNetworkRequest(self.app.login.getUrl(path))
+            request.setHeader(QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
+            self.ticket = self.app.network.http("PUT", request, params.encodedQuery())
 
         return True
 
