@@ -595,3 +595,63 @@ class BookDialog(QDialog):
         """Make the dialog slightly wider than required."""
         size = super(BookDialog, self).sizeHint()
         return QSize(size.width() + 150, size.height())
+
+class LendingDialog(QDialog):
+
+    dialogs = dict()
+
+    @classmethod
+    def open(cls, app, book, parent):
+        if not book.id in cls.dialogs or not cls.dialogs[book.id].isVisible():
+            cls.dialogs[book.id] = LendingDialog(app, book, parent)
+            cls.dialogs[book.id].show()
+        else:
+            cls.dialogs[book.id].activateWindow()
+
+    @classmethod
+    def ensureClosed(cls, book):
+        if book.id in cls.dialogs:
+            cls.dialogs[book.id].close()
+
+    def __init__(self, app, book, parent):
+        super(LendingDialog, self).__init__(parent)
+        self.app = app
+        self.book = book
+
+        # Create the stack of the different views and a progress indicator.
+        self.layoutStack = QStackedLayout()
+        self.layoutStack.addWidget(self.initBusyIndicator())
+        self.setLayout(self.layoutStack)
+
+        # Initialize the displayed values.
+        self.updateValues(False)
+
+        # Handle network responses.
+        self.app.network.finished.connect(self.onNetworkRequestFinished)
+        self.ticket = None
+
+    def updateValues(self, busy):
+        if busy:
+            self.layoutStack.setCurrentIndex(0)
+            self.busyIndicator.timer.start(100)
+        else:
+            self.busyIndicator.timer.stop()
+
+    def initBusyIndicator(self):
+        self.busyIndicator = progressspinner.ProgressSpinner()
+        return self.busyIndicator
+
+    def closeEvent(self, event):
+        # Saving in progress.
+        if self.ticket:
+            event.ignore()
+            return
+
+        # Maintain list of open dialogs.
+        if self.book.id in LendingDialog.dialogs:
+            del LendingDialog.dialogs[self.book.id]
+
+        event.accept()
+
+    def onNetworkRequestFinished(self, reply):
+        request = reply.request()

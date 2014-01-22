@@ -144,6 +144,9 @@ class MainWindow(QMainWindow):
         self.addBookAction.setIcon(QIcon("data/address_book_add_32.png"))
         self.addBookAction.triggered.connect(self.onAddBookAction)
 
+        self.lendingAction = QAction(u"Ausleihen / zurücknehmen", self)
+        self.lendingAction.triggered.connect(self.onLendingAction)
+
         self.editBookAction = QAction("Buch bearbeiten", self)
         self.editBookAction.triggered.connect(self.onEditBookAction)
 
@@ -164,10 +167,14 @@ class MainWindow(QMainWindow):
         bookMenu = self.menuBar().addMenu(u"Bücher")
         bookMenu.addAction(self.addBookAction)
         bookMenu.addSeparator()
+        bookMenu.addAction(self.lendingAction)
+        bookMenu.addSeparator()
         bookMenu.addAction(self.editBookAction)
         bookMenu.addAction(self.deleteBookAction)
 
         self.contextMenu = QMenu()
+        self.contextMenu.addAction(self.lendingAction)
+        self.contextMenu.addSeparator()
         self.contextMenu.addAction(self.editBookAction)
         self.contextMenu.addAction(self.deleteBookAction)
 
@@ -198,6 +205,11 @@ class MainWindow(QMainWindow):
         """Handles the add book action."""
         book.BookDialog.open(self.app, None, self)
 
+    def onLendingAction(self):
+        """Handles the lending action."""
+        for currentBook in self.selectedBooks():
+            book.LendingDialog.open(self.app, currentBook, self)
+
     def onEditBookAction(self):
         """Handles the edit book action."""
         for currentBook in self.selectedBooks():
@@ -218,6 +230,7 @@ class MainWindow(QMainWindow):
 
             if result == QMessageBox.Yes:
                 book.BookDialog.ensureClosed(currentBook)
+                book.LendingDialog.ensureClosed(currentBook)
                 self.app.books.delete(currentBook)
             elif result == QMessageBox.Cancel:
                 return
