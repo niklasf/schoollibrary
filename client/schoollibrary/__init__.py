@@ -193,9 +193,8 @@ class LoginDialog(QDialog):
 
         self.setWindowTitle("Schulbibliothek Login")
 
-        grid = QGridLayout()
+        form = QFormLayout()
 
-        grid.addWidget(QLabel("Verbindung:"), 0, 0)
         row = QHBoxLayout()
         self.schemaBox = QComboBox()
         self.schemaBox.addItem("http")
@@ -212,24 +211,22 @@ class LoginDialog(QDialog):
         self.portBox.setValue(int(self.app.settings.value("ApiPort", 5000)))
         row.addWidget(QLabel(":"))
         row.addWidget(self.portBox)
-        grid.addLayout(row, 0, 1)
+        form.addRow("Verbindung:", row)
 
-        grid.addWidget(QLabel("Benutzername:"), 3, 0)
         self.userNameBox = QLineEdit()
         self.userNameBox.setText(self.app.settings.value("ApiUserName", ""))
-        grid.addWidget(self.userNameBox, 3, 1)
+        form.addRow("Benutzername:", self.userNameBox)
 
-        grid.addWidget(QLabel("Passwort:"), 4, 0)
         self.passwordBox = QLineEdit()
         self.passwordBox.setEchoMode(QLineEdit.Password)
-        grid.addWidget(self.passwordBox, 4, 1)
+        form.addRow("Passwort:", self.passwordBox)
 
         self.buttons = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         self.buttons.rejected.connect(self.reject)
         self.buttons.accepted.connect(self.onAccept)
-        grid.addWidget(self.buttons, 5, 0, 1, 2)
+        form.addRow(self.buttons)
 
-        self.setLayout(grid)
+        self.setLayout(form)
 
     def getUrl(self, path=None):
         """Gets a URL with the settings chosen in the dialog."""
