@@ -263,7 +263,7 @@ app.post('/books/', function (req, res) {
             res.send(400, err);
         } else {
             res.setHeader('ETag', book.etag);
-            res.send(book);
+            res.json(book.toObject({ virtuals: true }));
         }
     });
 });
