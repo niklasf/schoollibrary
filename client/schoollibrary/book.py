@@ -435,8 +435,47 @@ class BookDialog(QDialog):
 
     def isDirty(self):
         """Checks if anything has been changed and not saved."""
-        # TODO: Actually do this.
-        return True
+        if self.isbnBox.text() != self.book.isbn:
+            return True
+
+        if self.titleBox.text() != self.book.title:
+            return True
+
+        if self.authorsBox.text() != self.book.authors:
+            return True
+
+        if self.volumeBox.text() != self.book.volume:
+            return True
+
+        if self.topicBox.text() != self.book.topic:
+            return True
+
+        if self.keywordsBox.text() != self.book.keywords:
+            return True
+
+        if self.signatureBox.text() != self.book.signature:
+            return True
+
+        if self.locationBox.text() != self.book.location:
+            return True
+
+        if not self.book.year:
+            if self.yearBox.text():
+                return True
+        else:
+            if self.yearBox.text() != str(self.book.year):
+                return True
+
+        if self.publisherBox.text() != self.book.publisher:
+            return True
+
+        if self.placeOfPublicationBox.text() != self.book.placeOfPublication:
+            return True
+
+        if self.lendableBox.isChecked() != self.book.lendable:
+            return True
+
+        return False
 
     def save(self):
         """Validates and saves the current product."""
