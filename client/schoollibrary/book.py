@@ -351,6 +351,7 @@ class BookDialog(QDialog):
         buttonBox = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         buttonBox.accepted.connect(self.onSaveClicked)
         buttonBox.rejected.connect(self.close)
+        buttonBox.button(QDialogButtonBox.Cancel).setAutoDefault(False)
         form.addRow(buttonBox)
 
         widget = QWidget()
@@ -425,6 +426,7 @@ class BookDialog(QDialog):
         if self.ticket != reply.request().attribute(network.Ticket):
             return
 
+        self.ticket = None
         self.showProgress(False)
 
         # Check for network errors.
@@ -439,7 +441,6 @@ class BookDialog(QDialog):
             return
 
         # Accepted.
-        self.ticket = None
         self.accept()
 
     def onSaveClicked(self):
