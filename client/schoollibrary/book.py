@@ -26,7 +26,7 @@ import re
 
 import indexed
 import util
-import progressspinner
+import busyindicator
 import network
 
 def normalize_isbn(isbn):
@@ -329,10 +329,10 @@ class BookDialog(QDialog):
         self.app = app
         self.book = book
 
-        # Create a stack of the form and a progress indicator.
+        # Create a stack of the form and a busy indicator.
         self.layoutStack = QStackedLayout()
         self.layoutStack.addWidget(self.initForm())
-        self.layoutStack.addWidget(self.initProgressSpinner())
+        self.layoutStack.addWidget(self.initBusyIndicator())
         self.setLayout(self.layoutStack)
 
         # Initialize form values.
@@ -419,18 +419,18 @@ class BookDialog(QDialog):
         self.placeOfPublicationBox.setText(self.book.placeOfPublication)
         self.lendableBox.setChecked(self.book.lendable)
 
-    def initProgressSpinner(self):
-        """Initialize a progress indicator."""
-        self.progressSpinner = progressspinner.ProgressSpinner()
-        return self.progressSpinner
+    def initBusyIndicator(self):
+        """Initialize a busy indicator."""
+        self.busyIndicator = busyindicator.BusyIndicator()
+        return self.busyIndicator
 
-    def showProgress(self, visible):
-        """Shows or hides the progress indicator."""
+    def showBusy(self, visible):
+        """Shows or hides the busy indicator."""
         if visible:
-            self.progressSpinner.timer.start(100)
+            self.busyIndicator.setEnabled(True)
             self.layoutStack.setCurrentIndex(1)
         else:
-            self.progressSpinner.timer.stop()
+            self.busyIndicator.setEnabled(False)
             self.layoutStack.setCurrentIndex(0)
 
     def isDirty(self):
@@ -538,7 +538,7 @@ class BookDialog(QDialog):
             return
 
         self.ticket = None
-        self.showProgress(False)
+        self.showBusy(False)
 
         # Check for network errors.
         if reply.error() != QNetworkReply.NoError:
@@ -557,7 +557,7 @@ class BookDialog(QDialog):
     def onSaveClicked(self):
         """Handles a click on the save button."""
         if self.save():
-            self.showProgress(True)
+            self.showBusy(True)
 
     def closeEvent(self, event):
         """Prevents the window from beeing closed if dirty."""
@@ -618,7 +618,7 @@ class LendingDialog(QDialog):
         self.app = app
         self.book = book
 
-        # Create the stack of the different views and a progress indicator.
+        # Create the stack of the different views and a busy indicator.
         self.layoutStack = QStackedLayout()
         self.layoutStack.addWidget(self.initBusyIndicator())
         self.setLayout(self.layoutStack)
@@ -633,12 +633,12 @@ class LendingDialog(QDialog):
     def updateValues(self, busy):
         if busy:
             self.layoutStack.setCurrentIndex(0)
-            self.busyIndicator.timer.start(100)
+            self.busyIndicator.setEnabled(True)
         else:
-            self.busyIndicator.timer.stop()
+            self.busyIndicator.setEnabled(False)
 
     def initBusyIndicator(self):
-        self.busyIndicator = progressspinner.ProgressSpinner()
+        self.busyIndicator = busyindicator.BusyIndicator()
         return self.busyIndicator
 
     def closeEvent(self, event):

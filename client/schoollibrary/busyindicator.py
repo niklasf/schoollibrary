@@ -21,9 +21,9 @@ from PySide.QtGui import *
 
 import sys
 
-class ProgressSpinner(QWidget):
+class BusyIndicator(QWidget):
     def __init__(self, parent=None):
-        super(ProgressSpinner, self).__init__(parent)
+        super(BusyIndicator, self).__init__(parent)
 
         policy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.setSizePolicy(policy)
@@ -36,8 +36,10 @@ class ProgressSpinner(QWidget):
         self.baseColor = self.palette().color(QPalette.Midlight)
         self.color = self.palette().color(QPalette.Highlight)
 
+        self.setEnabled(False)
+
     def onTimeout(self):
-        self.angle = (self.angle + 10) % 360
+        self.angle = (self.angle + 20) % 360
         self.update()
 
     def paintEvent(self, e):
@@ -63,12 +65,20 @@ class ProgressSpinner(QWidget):
 
         p.end()
 
+    def setEnabled(self, enabled):
+        super(BusyIndicator, self).setEnabled(enabled)
+
+        if enabled:
+            self.timer.start(75)
+        else:
+            self.timer.stop()
+
     def sizeHint(self):
         return QSize(60, 60)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    spinner = ProgressSpinner()
-    spinner.show()
-    spinner.timer.start(50)
+    widget = BusyIndicator()
+    widget.show()
+    widget.setEnabled(True)
     sys.exit(app.exec_())

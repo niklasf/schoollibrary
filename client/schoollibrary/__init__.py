@@ -34,7 +34,7 @@ import uuid
 import book
 import user
 import util
-import progressspinner
+import busyindicator
 import network
 
 class Application(QApplication):
@@ -311,8 +311,8 @@ class LoginDialog(QDialog):
     def initProgressSpinner(self):
         layout = QVBoxLayout()
 
-        self.progressSpinner = progressspinner.ProgressSpinner()
-        layout.addWidget(self.progressSpinner)
+        self.busyIndicator = busyindicator.BusyIndicator()
+        layout.addWidget(self.busyIndicator)
 
         row = QHBoxLayout()
         row.addStretch(1)
@@ -350,13 +350,13 @@ class LoginDialog(QDialog):
             return
 
         self.layoutStack.setCurrentIndex(1)
-        self.progressSpinner.timer.start(100)
+        self.busyIndicator.setEnabled(True)
 
         self.ticket = self.app.network.http("GET", QNetworkRequest(url))
 
     def onCancel(self):
         self.layoutStack.setCurrentIndex(0)
-        self.progressSpinner.timer.stop()
+        self.busyIndicator.setEnabled(False)
         self.ticket = None
 
     def onNetworkRequestFinished(self, reply):
@@ -365,7 +365,7 @@ class LoginDialog(QDialog):
         if reply.request().attribute(network.Ticket) != self.ticket:
             return
         else:
-            self.progressSpinner.timer.stop()
+            self.busyIndicator.setEnabled(False)
             self.layoutStack.setCurrentIndex(0)
 
         # Check for network errors.
