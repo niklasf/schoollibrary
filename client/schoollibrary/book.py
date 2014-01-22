@@ -674,6 +674,13 @@ class LendingDialog(QDialog):
         self.lendUserBox.setCompleter(self.lendUserBoxCompleter)
         form.addRow("Ausleihen an:", self.lendUserBox)
 
+        row = QHBoxLayout()
+        row.addStretch(1)
+        self.lendButton = QPushButton(u"Für 14 Tage ausleihen")
+        self.lendButton.setIcon(QIcon("data/basket_go_32.png"))
+        row.addWidget(self.lendButton)
+        form.addRow(row)
+
         widget = QWidget()
         widget.setLayout(form)
         return widget
