@@ -258,6 +258,7 @@ class BookTableModel(QAbstractTableModel):
         book.year = int(data["year"]) if data["year"] else None
         book.publisher = data["publisher"]
         book.placeOfPublication = data["placeOfPublication"]
+        book.lendable = bool(data["lendable"])
         book.lent = bool(data["lent"])
 
         if book.lent:
