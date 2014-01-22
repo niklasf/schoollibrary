@@ -59,10 +59,6 @@ class Application(QApplication):
         self.users.reload()
         self.books.reload()
 
-        view = QListView()
-        view.setModel(self.users)
-        view.show()
-
         # Open the main window and run the event loop.
         mainWindow = MainWindow(self)
         mainWindow.show()
@@ -144,7 +140,8 @@ class MainWindow(QMainWindow):
         self.addBookAction.setIcon(QIcon("data/address_book_add_32.png"))
         self.addBookAction.triggered.connect(self.onAddBookAction)
 
-        self.lendingAction = QAction(u"Ausleihen / zurücknehmen", self)
+        self.lendingAction = QAction(u"Ausleihe", self)
+        self.lendingAction.setIcon(QIcon("data/basket_32.png"))
         self.lendingAction.triggered.connect(self.onLendingAction)
 
         self.editBookAction = QAction("Buch bearbeiten", self)
@@ -183,6 +180,7 @@ class MainWindow(QMainWindow):
         toolBar = self.addToolBar("Test")
         toolBar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
+        toolBar.addAction(self.lendingAction)
         toolBar.addAction(self.addBookAction)
         toolBar.addSeparator()
         toolBar.addAction(self.refreshAction)

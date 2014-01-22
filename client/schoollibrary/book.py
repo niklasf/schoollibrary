@@ -620,6 +620,7 @@ class LendingDialog(QDialog):
 
         # Create the stack of the different views and a busy indicator.
         self.layoutStack = QStackedLayout()
+        self.layoutStack.addWidget(self.initLendPage())
         self.layoutStack.addWidget(self.initBusyIndicator())
         self.setLayout(self.layoutStack)
 
@@ -632,10 +633,50 @@ class LendingDialog(QDialog):
 
     def updateValues(self, busy):
         if busy:
-            self.layoutStack.setCurrentIndex(0)
+            self.layoutStack.setCurrentIndex(1)
             self.busyIndicator.setEnabled(True)
         else:
             self.busyIndicator.setEnabled(False)
+
+        if not self.book.lent:
+            self.lendIdBox.setText(str(self.book.id))
+            self.lendIsbnBox.setText(self.book.isbn)
+            self.lendTitleBox.setText(self.book.title)
+            self.lendAuthorsBox.setText(self.book.authors)
+            self.lendLocationBox.setText(self.book.location)
+
+    def initLendPage(self):
+        form = QFormLayout()
+
+        self.lendIdBox = QLabel()
+        form.addRow("ID:", self.lendIdBox)
+
+        self.lendIsbnBox = QLabel()
+        form.addRow("ISBN:", self.lendIsbnBox)
+
+        self.lendTitleBox = QLabel()
+        font = self.lendTitleBox.font()
+        font.setBold(True)
+        self.lendTitleBox.setFont(font)
+        form.addRow("Titel:", self.lendTitleBox)
+
+        self.lendAuthorsBox = QLabel()
+        form.addRow("Autoren:", self.lendAuthorsBox)
+
+        self.lendLocationBox = QLabel()
+        form.addRow("Standort:", self.lendLocationBox)
+
+        self.lendUserBoxCompleter = QCompleter(self)
+        self.lendUserBoxCompleter.setModel(self.app.users)
+        self.lendUserBoxCompleter.setCaseSensitivity(Qt.CaseInsensitive)
+        self.lendUserBoxCompleter.setCompletionMode(QCompleter.PopupCompletion)
+        self.lendUserBox = QLineEdit()
+        self.lendUserBox.setCompleter(self.lendUserBoxCompleter)
+        form.addRow("Ausleihen an:", self.lendUserBox)
+
+        widget = QWidget()
+        widget.setLayout(form)
+        return widget
 
     def initBusyIndicator(self):
         self.busyIndicator = busyindicator.BusyIndicator()
