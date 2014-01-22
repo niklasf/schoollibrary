@@ -334,6 +334,7 @@ class BookDialog(QDialog):
         form.addRow(u"Schlüsselwörter", self.keywordsBox)
 
         self.signatureBox = QLineEdit()
+        self.signatureBox.setMaxLength(50)
         form.addRow("Signatur:", self.signatureBox)
 
         self.locationBox = QLineEdit()
