@@ -28,10 +28,12 @@ from PySide.QtGui import *
 from PySide.QtNetwork import *
 
 import json
+import uuid
 
 import book
 import user
 import util
+import progressspinner
 
 class Application(QApplication):
     """The main application class of the schoollibrary client."""
@@ -193,6 +195,14 @@ class LoginDialog(QDialog):
 
         self.setWindowTitle("Schulbibliothek Login")
 
+        self.layoutStack = QStackedLayout()
+        self.layoutStack.addWidget(self.initForm())
+        self.layoutStack.addWidget(self.initProgressSpinner())
+        self.setLayout(self.layoutStack)
+
+        self.ticket = None
+
+    def initForm(self):
         form = QFormLayout()
 
         row = QHBoxLayout()
@@ -222,11 +232,35 @@ class LoginDialog(QDialog):
         form.addRow("Passwort:", self.passwordBox)
 
         self.buttons = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
+        self.buttons.button(QDialogButtonBox.Ok).setAutoDefault(True)
+        self.buttons.button(QDialogButtonBox.Ok).setDefault(True)
+        self.buttons.button(QDialogButtonBox.Cancel).setAutoDefault(False)
         self.buttons.rejected.connect(self.reject)
         self.buttons.accepted.connect(self.onAccept)
         form.addRow(self.buttons)
 
-        self.setLayout(form)
+        widget = QWidget()
+        widget.setLayout(form)
+        return widget
+
+    def initProgressSpinner(self):
+        layout = QVBoxLayout()
+
+        self.progressSpinner = progressspinner.ProgressSpinner()
+        layout.addWidget(self.progressSpinner)
+
+        row = QHBoxLayout()
+        row.addStretch(1)
+        self.cancelButton = QPushButton("Cancel")
+        self.cancelButton.clicked.connect(self.onCancel)
+        self.cancelButton.setAutoDefault(False)
+        row.addWidget(self.cancelButton)
+        row.addStretch(1)
+        layout.addLayout(row)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+        return widget
 
     def getUrl(self, path=None):
         """Gets a URL with the settings chosen in the dialog."""
@@ -250,18 +284,28 @@ class LoginDialog(QDialog):
             QMessageBox.warning(self, self.windowTitle(), "Invalid URL: %s" % url.toString(QUrl.RemovePassword))
             return
 
-        self.buttons.setEnabled(False)
+        self.layoutStack.setCurrentIndex(1)
+        self.progressSpinner.timer.start(100)
+
+        self.ticket = str(uuid.uuid4())
 
         request = QNetworkRequest(url)
+        request.setAttribute(QNetworkRequest.User, self.ticket)
         self.app.network.get(request)
+
+    def onCancel(self):
+        self.layoutStack.setCurrentIndex(0)
+        self.progressSpinner.timer.stop()
+        self.ticket = None
 
     def onNetworkRequestFinished(self, reply):
         """Handles responses to the login request."""
         # Ensure the reply is meant for this dialog.
-        if reply.request().url().path() != "/":
+        if reply.request().attribute(QNetworkRequest.User) != self.ticket:
             return
         else:
-            self.buttons.setEnabled(True)
+            self.progressSpinner.timer.stop()
+            self.layoutStack.setCurrentIndex(0)
 
         # Check for network errors.
         if reply.error() != QNetworkReply.NoError:
@@ -269,8 +313,8 @@ class LoginDialog(QDialog):
             return
 
         # Check for HTTP errors.
-        staus = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
-        if staus != 200:
+        status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        if status != 200:
             QMessageBox.warning(self, self.windowTitle(), "HTTP Status Code: %d" % status)
             return
 
