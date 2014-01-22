@@ -273,7 +273,11 @@ class BookDialog(QDialog):
     @classmethod
     def ensureClosed(cls, book):
         if book.id in cls.dialogs:
-            cls.dialogs[book.id].close()
+            dialog = cls.dialogs[book.id]
+            del cls.dialogs[book.id]
+
+            if not dialog.close():
+                cls.dialogs[book.id] = dialog
 
     def __init__(self, app, book, parent):
         super(BookDialog, self).__init__(parent)
@@ -346,7 +350,7 @@ class BookDialog(QDialog):
         """Initialize the displayed values according to the book."""
         if self.book:
             self.setWindowTitle("Buch: %s" % self.book.title)
-            self.idBox.setText(self.book.id)
+            self.idBox.setText(str(self.book.id))
         else:
             self.setWindowTitle("Neues Buch")
             self.idBox.setText("automatisch")
@@ -436,10 +440,8 @@ class BookDialog(QDialog):
             event.ignore()
             return
 
-        # Maintain list of open dialogs.
-        if self.book.id in BookDialog.dialogs:
-            del BookDialog.dialogs[self.book.id]
-        elif self.book.id:
+        # Close immediately if it should not be open.
+        if self.book.id and not self.book.id in BookDialog.dialogs:
             event.accept()
             return
 
@@ -456,5 +458,9 @@ class BookDialog(QDialog):
             elif result == QMessageBox.Cancel:
                 event.ignore()
                 return
+
+        # Maintain list of open dialogs.
+        if self.book.id in BookDialogs.dialogs:
+            del BookDialogs.dialogs[self.book.id]
 
         event.accept()
