@@ -155,6 +155,12 @@ class BookTableModel(QAbstractTableModel):
                 font = QFont()
                 font.setPointSizeF(font.pointSize() * 0.8)
                 return font
+        elif role == Qt.BackgroundRole:
+            if book.lent:
+                # TODO: Highlight red if overdue.
+                return QColor(100, 200, 100)
+            elif not book.lendable:
+                return QColor(200, 200, 200)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
