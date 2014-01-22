@@ -102,6 +102,11 @@ class BookTableModel(QAbstractTableModel):
                 return book.isbn
             elif index.column() == 9:
                 return book.edition
+        elif role == Qt.UserRole:
+            if index.column() == 0:
+                return book.id
+            else:
+                return index.data(Qt.DisplayRole)
         elif role == util.TitleAndDescriptionDelegate.DescriptionRole:
             if index.column() == 1:
                 return book.authors
@@ -191,6 +196,7 @@ class BookTableModel(QAbstractTableModel):
         proxy = QSortFilterProxyModel()
         proxy.setSourceModel(self)
         proxy.setDynamicSortFilter(True)
+        proxy.setSortRole(Qt.UserRole)
         return proxy
 
 class BookDialog(QDialog):
