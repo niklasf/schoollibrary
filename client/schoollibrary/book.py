@@ -160,7 +160,7 @@ class BookTableModel(QAbstractTableModel):
                 # TODO: Highlight red if overdue.
                 return QColor(100, 200, 100)
             elif not book.lendable:
-                return QColor(200, 200, 200)
+                return QColor(230, 230, 230)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
