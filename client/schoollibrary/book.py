@@ -590,3 +590,8 @@ class BookDialog(QDialog):
             del BookDialog.dialogs[self.book.id]
 
         event.accept()
+
+    def sizeHint(self):
+        """Make the dialog slightly wider than required."""
+        size = super(BookDialog, self).sizeHint()
+        return QSize(size.width() + 150, size.height())
