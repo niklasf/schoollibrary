@@ -79,6 +79,11 @@ var bookSchema = mongoose.Schema({
         default: '',
         trim: true
     },
+    edition: {
+        type: String,
+        default: '',
+        trim: true
+    },
     lendable: {
         type: Boolean,
         default: true
@@ -258,6 +263,7 @@ app.post('/books/', function (req, res) {
     book.publisher = req.body.publisher;
     book.placeOfPublication = req.body.placeOfPublication;
     book.volume = req.body.volume;
+    book.edition = req.body.edition;
     book.lendable = req.body.lendable;
 
     book.save(function (err) {
@@ -317,6 +323,7 @@ app.put('/books/:id/', function (req, res) {
         book.publisher = req.body.publisher;
         book.placeOfPublication = req.body.placeOfPublication;
         book.volume = req.body.volume;
+        book.edition = req.body.edition;
         book.lendable = req.body.lendable;
 
         book.save(function (err) {
