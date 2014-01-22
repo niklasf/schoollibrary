@@ -463,7 +463,7 @@ class BookDialog(QDialog):
                 return
 
         # Maintain list of open dialogs.
-        if self.book.id in BookDialogs.dialogs:
-            del BookDialogs.dialogs[self.book.id]
+        if self.book.id in BookDialog.dialogs:
+            del BookDialog.dialogs[self.book.id]
 
         event.accept()
