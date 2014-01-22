@@ -142,6 +142,10 @@ class MainWindow(QMainWindow):
         self.addBookAction.setIcon(QIcon("data/address_book_add_32.png"))
         self.addBookAction.triggered.connect(self.onAddBookAction)
 
+        self.deleteBookAction = QAction(u"Buch löschen", self)
+        self.deleteBookAction.setShortcut("Del")
+        self.deleteBookAction.triggered.connect(self.onDeleteBookAction)
+
     def initMenu(self):
         """Creates the main menu."""
         mainMenu = self.menuBar().addMenu("Bibliothek")
@@ -154,6 +158,8 @@ class MainWindow(QMainWindow):
 
         bookMenu = self.menuBar().addMenu(u"Bücher")
         bookMenu.addAction(self.addBookAction)
+        bookMenu.addSeparator()
+        bookMenu.addAction(self.deleteBookAction)
 
     def initToolBar(self):
         """Creates the toolbar."""
@@ -182,6 +188,29 @@ class MainWindow(QMainWindow):
         """Handles the add book action."""
         dialog = book.BookDialog(self.app, None, self)
         dialog.show()
+
+    def onDeleteBookAction(self):
+        """Handles the delete book action."""
+        books = self.selectedBooks()
+
+        buttons = QMessageBox.Yes | QMessageBox.No
+        if len(books) > 1:
+            buttons = buttons | QMessageBox.Cancel
+
+        for book in books:
+            result = QMessageBox.question(self, u"Buch löschen",
+                u"Möchten Sie das Buch »%s« wirklich löschen?" % book.title,
+                buttons)
+
+            if result == QMessageBox.Yes:
+                self.app.books.delete(book)
+            elif result == QMessageBox.Cancel:
+                return
+
+    def selectedBooks(self):
+        table = self.allBooksTable
+        model = table.model()
+        return [model.indexToBook(index) for index in table.selectedIndexes() if index.column() == 0]
 
     def closeEvent(self, event):
         """Saves the geometry when the window is closed."""

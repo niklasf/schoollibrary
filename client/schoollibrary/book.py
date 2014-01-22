@@ -150,6 +150,11 @@ class BookTableModel(QAbstractTableModel):
         request = QNetworkRequest(self.app.login.getUrl("/books/"))
         return self.app.network.http("GET", request)
 
+    def delete(self, book):
+        path = "/books/%d/" % book.id
+        request = QNetworkRequest(self.app.login.getUrl(path))
+        return self.app.network.http("DELETE", request)
+
     def onNetworkRequestFinished(self, reply):
         request = reply.request()
 
@@ -217,12 +222,32 @@ class BookTableModel(QAbstractTableModel):
         else:
             return QModelIndex()
 
+    def indexToBook(self, index):
+        if not index.isValid():
+            return None
+        else:
+            return index.internalPointer()
+
     def getSortProxy(self):
-        proxy = QSortFilterProxyModel()
+        proxy = BookTableSortFilterProxyModel()
         proxy.setSourceModel(self)
-        proxy.setDynamicSortFilter(True)
-        proxy.setSortRole(Qt.UserRole)
         return proxy
+
+class BookTableSortFilterProxyModel(QSortFilterProxyModel):
+    """Sorts and filters an underlying book table model."""
+
+    def __init__(self):
+        super(BookTableSortFilterProxyModel, self).__init__()
+        self.setDynamicSortFilter(True)
+        self.setSortRole(Qt.UserRole)
+
+    def indexToBook(self, index):
+        """Gets the book associated with an index."""
+        return self.sourceModel().indexToBook(self.mapToSource(index))
+
+    def indexFromBook(self, book):
+        """Gets the index associated with a book."""
+        return self.mapFromSource(self.sourceModel().indexFromBook(book))
 
 class BookDialog(QDialog):
     """A product editing dialog."""
