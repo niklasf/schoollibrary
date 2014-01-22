@@ -21,9 +21,12 @@ from PySide.QtGui import *
 from PySide.QtNetwork import *
 
 import json
+import uuid
 
 import indexed
 import util
+import progressspinner
+import network
 
 class Book(object):
     """A book object."""
@@ -135,78 +138,54 @@ class BookTableModel(QAbstractTableModel):
                 elif section == 9:
                     return "Auflage"
 
-    def save(self, book):
-        """Saves a book to the server."""
-        params = QUrl()
-        params.addQueryItem("_csrf", self.app.login.csrf)
-        params.addQueryItem("isbn", book.isbn)
-        params.addQueryItem("title", book.title)
-        params.addQueryItem("authors", book.authors)
-        params.addQueryItem("topic", book.topic)
-        params.addQueryItem("keywords", book.keywords)
-        params.addQueryItem("signature", book.signature)
-        params.addQueryItem("location", book.location)
-
-        if book.year:
-            params.addQueryItem("year", str(book.year))
-
-        params.addQueryItem("publisher", book.publisher)
-        params.addQueryItem("placeOfPublication", book.placeOfPublication)
-        params.addQueryItem("volume", book.volume)
-        params.addQueryItem("lendable", "true" if book.lendable else "false")
-
-        request = QNetworkRequest(self.app.login.getUrl("/books/"))
-        request.setHeader(QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
-        self.app.network.post(request, params.encodedQuery())
-
     def reload(self):
         request = QNetworkRequest(self.app.login.getUrl("/books/"))
-        self.app.network.get(request)
+        return self.app.network.http("GET", request)
 
     def onNetworkRequestFinished(self, reply):
-        if reply.request().url().path() != "/books/":
-            return
+        request = reply.request()
 
-        print reply.request().attribute(QNetworkRequest.HttpStatusCodeAttribute)
-        print reply.request().attribute(QNetworkRequest.CustomVerbAttribute)
+        if request.url().path() == "/books/" and request.attribute(network.HttpMethod) == "POST":
+            data = json.loads(unicode(reply.readAll()))
+            book = self.bookFromData(data)
+            assert not book.id in self.cache
 
-        blob = unicode(reply.readAll())
-        print blob
-
-        books = json.loads(blob)
-
-        if "_id" in books:
-            # TODO: ...
-            return
-
-        self.beginResetModel()
-        self.cache.clear()
-
-        for data in books.values():
-            book = Book()
-
-            book.id = int(data["_id"])
-            book.isbn = data["isbn"]
-            book.title = data["title"]
-            book.authors = data["authors"]
-            book.volume = data["volume"]
-            book.topic = data["topic"]
-            book.keywords = data["keywords"]
-            book.signature = data["signature"]
-            book.location = data["location"]
-            book.year = int(data["year"]) if data["year"] else None
-            book.publisher = data["publisher"]
-            book.placeOfPublication = data["placeOfPublication"]
-            book.lent = bool(data["lent"])
-
-            if book.lent:
-                book.lendingUser = data["lending"]["user"]
-                book.lendingSince = data["lending"]["since"]
-                book.lendingDays = data["lending"]["days"]
-
+            self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
             self.cache[book.id] = book
+            self.endInsertRows()
+        elif request.url().path() == "/books/" and request.attribute(network.HttpMethod) == "GET":
+            self.beginResetModel()
+            self.cache.clear()
 
-        self.endResetModel()
+            for data in json.loads(unicode(reply.readAll())).values():
+                book = self.bookFromData(data)
+                self.cache[book.id] = book
+
+            self.endResetModel()
+
+    def bookFromData(self, data):
+        book = Book()
+
+        book.id = int(data["_id"])
+        book.isbn = data["isbn"]
+        book.title = data["title"]
+        book.authors = data["authors"]
+        book.volume = data["volume"]
+        book.topic = data["topic"]
+        book.keywords = data["keywords"]
+        book.signature = data["signature"]
+        book.location = data["location"]
+        book.year = int(data["year"]) if data["year"] else None
+        book.publisher = data["publisher"]
+        book.placeOfPublication = data["placeOfPublication"]
+        book.lent = bool(data["lent"])
+
+        if book.lent:
+            book.lendingUser = data["lending"]["user"]
+            book.lendingSince = data["lending"]["since"]
+            book.lendingDays = data["lending"]["days"]
+
+        return book
 
     def getSortProxy(self):
         proxy = QSortFilterProxyModel()
@@ -222,68 +201,67 @@ class BookDialog(QDialog):
         self.app = app
         self.book = book
 
-        self.initUi()
+        # Create a stack of the form and a progress indicator.
+        self.layoutStack = QStackedLayout()
+        self.layoutStack.addWidget(self.initForm())
+        self.layoutStack.addWidget(self.initProgressSpinner())
+        self.setLayout(self.layoutStack)
+
+        # Initialize form values.
         self.initValues()
 
-    def initUi(self):
+        # Handle network responses.
+        self.app.network.finished.connect(self.onNetworkRequestFinished)
+        self.ticket = None
+
+    def initForm(self):
         """Initializes the user interface."""
-        grid = QGridLayout()
+        form = QFormLayout()
 
-        grid.addWidget(QLabel("ID:"), 0, 0, Qt.AlignRight)
         self.idBox = QLabel()
-        grid.addWidget(self.idBox, 0, 1)
+        form.addRow("ID:", self.idBox)
 
-        grid.addWidget(QLabel("ISBN:"), 1, 0, Qt.AlignRight)
         self.isbnBox = QLineEdit()
-        grid.addWidget(self.isbnBox, 1, 1)
+        form.addRow("ISBN:", self.isbnBox)
 
-        grid.addWidget(QLabel("Titel:"), 2, 0, Qt.AlignRight)
         self.titleBox = QLineEdit()
-        grid.addWidget(self.titleBox, 2, 1)
+        form.addRow("Titel:", self.titleBox)
 
-        grid.addWidget(QLabel("Autoren:"), 3, 0, Qt.AlignRight)
         self.authorsBox = QLineEdit()
-        grid.addWidget(self.authorsBox, 3, 1)
+        form.addRow("Autoren:", self.authorsBox)
 
-        grid.addWidget(QLabel("Band:"), 4, 0, Qt.AlignRight)
         self.volumeBox = QLineEdit()
-        grid.addWidget(self.volumeBox, 4, 1)
+        form.addRow("Band:", self.volumeBox)
 
-        grid.addWidget(QLabel("Thema:"), 5, 0, Qt.AlignRight)
         self.topicBox = QLineEdit()
-        grid.addWidget(self.topicBox, 5, 1)
+        form.addRow("Thema:", self.topicBox)
 
-        grid.addWidget(QLabel(u"Schlüsselwörter:"), 6, 0, Qt.AlignRight)
         self.keywordsBox = QLineEdit()
-        grid.addWidget(self.keywordsBox, 6, 1)
+        form.addRow(u"Schlüsselwörter", self.keywordsBox)
 
-        grid.addWidget(QLabel("Signatur:"), 7, 0, Qt.AlignRight)
         self.signatureBox = QLineEdit()
-        grid.addWidget(self.signatureBox, 7, 1)
+        form.addRow("Signatur:", self.signatureBox)
 
-        grid.addWidget(QLabel("Standort:"), 8, 0, Qt.AlignRight)
         self.locationBox = QLineEdit()
-        grid.addWidget(self.locationBox, 8, 1)
+        form.addRow("Standort:", self.locationBox)
 
-        grid.addWidget(QLabel("Jahr:"), 9, 0, Qt.AlignRight)
         self.yearBox = QLineEdit()
-        grid.addWidget(self.yearBox, 9, 1)
+        form.addRow("Jahr:", self.yearBox)
 
-        grid.addWidget(QLabel("Verlag:"), 10, 0, Qt.AlignRight)
         self.publisherBox = QLineEdit()
-        grid.addWidget(self.publisherBox, 10, 1)
+        form.addRow("Verlag:", self.publisherBox)
 
-        grid.addWidget(QLabel(u"Veröffentlichungsort:"), 11, 0, Qt.AlignRight)
         self.placeOfPublicationBox = QLineEdit()
-        grid.addWidget(self.placeOfPublicationBox, 11, 1)
+        form.addRow(u"Veröffentlichungsort:", self.placeOfPublicationBox)
 
         buttonBox = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         buttonBox.accepted.connect(self.onSaveClicked)
         buttonBox.rejected.connect(self.close)
-        grid.addWidget(buttonBox, 12, 1)
+        form.addRow(buttonBox)
 
-        self.setLayout(grid)
-        self.setWindowFlags(self.windowFlags() &~ Qt.WindowContextHelpButtonHint)
+        widget = QWidget()
+        widget.setLayout(form)
+        return widget
 
     def initValues(self):
         """Initialize the displayed values according to the book."""
@@ -299,6 +277,20 @@ class BookDialog(QDialog):
         self.titleBox.setText(self.book.title)
         self.authorsBox.setText(self.book.authors)
 
+    def initProgressSpinner(self):
+        """Initialize a progress indicator."""
+        self.progressSpinner = progressspinner.ProgressSpinner()
+        return self.progressSpinner
+
+    def showProgress(self, visible):
+        """Shows or hides the progress indicator."""
+        if visible:
+            self.progressSpinner.timer.start(100)
+            self.layoutStack.setCurrentIndex(1)
+        else:
+            self.progressSpinner.timer.stop()
+            self.layoutStack.setCurrentIndex(0)
+
     def isDirty(self):
         """Checks if anything has been changed and not saved."""
         # TODO: Actually do this.
@@ -306,57 +298,75 @@ class BookDialog(QDialog):
 
     def save(self):
         """Validates and saves the current product."""
-        if not self.isDirty() and self.book.id:
-            return True
+        params = QUrl()
+        params.addQueryItem("_csrf", self.app.login.csrf)
+        params.addQueryItem("isbn", self.isbnBox.text())
+        params.addQueryItem("title", self.titleBox.text())
+        params.addQueryItem("authors", self.authorsBox.text())
+        params.addQueryItem("topic", self.topicBox.text())
+        params.addQueryItem("keywords", self.keywordsBox.text())
+        params.addQueryItem("signature", self.signatureBox.text())
+        params.addQueryItem("location", self.locationBox.text())
+        params.addQueryItem("year", self.yearBox.text())
+        params.addQueryItem("publisher", self.publisherBox.text())
+        params.addQueryItem("placeOfPublication", self.placeOfPublicationBox.text())
+        params.addQueryItem("volume", self.volumeBox.text())
+        params.addQueryItem("lendable", "true")
 
-        if not self.titleBox.text().strip():
-            QMessageBox.warning(self, self.windowTitle(),
-                u"Es muss ein Titel angegeben werden.")
-            return False
-
-        # TODO: Validate year
-        # TODO: Validate ISBN
-
-        self.book.isbn = self.isbnBox.text().strip()
-        self.book.title = self.titleBox.text().strip()
-        self.book.authors = self.authorsBox.text().strip()
-        self.book.topic = self.topicBox.text().strip()
-        self.book.keywords = self.keywordsBox.text().strip()
-        self.book.signature = self.signatureBox.text().strip()
-        self.book.location = self.locationBox.text().strip()
-
-        year = self.yearBox.text().strip()
-        if year:
-            self.book.year = int(year)
+        if not self.book.id:
+            request = QNetworkRequest(self.app.login.getUrl("/books/"))
+            request.setHeader(QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
+            self.ticket = self.app.network.http("POST", request, params.encodedQuery())
         else:
-            self.book.year = None
+            assert False
 
-        self.book.publisher = self.publisherBox.text().strip()
-        self.book.placeOfPublication = self.placeOfPublicationBox.text().strip()
-        self.book.volume = self.volumeBox.text().strip()
-
-        # TODO
-        self.book.lendable = True
-
-        self.app.books.save(self.book)
         return True
+
+    def onNetworkRequestFinished(self, reply):
+        """Handles responses."""
+        # Only handle requests that concern this dialog.
+        if self.ticket != reply.request().attribute(network.Ticket):
+            return
+
+        self.showProgress(False)
+
+        # Check for network errors.
+        if reply.error() != QNetworkReply.NoError:
+            QMessageBox.warning(self, self.windowTitle(), reply.errorString())
+            return
+
+        # Check for HTTP errors.
+        status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        if status != 200:
+            QMessageBox.warning(self, self.windowTitle(), "HTTP Status Code: %d" % status)
+            return
+
+        # Accepted.
+        self.ticket = None
+        self.accept()
 
     def onSaveClicked(self):
         """Handles a click on the save button."""
         if self.save():
-            self.close()
+            self.showProgress(True)
 
     def closeEvent(self, event):
         """Prevents the window from beeing closed if dirty."""
+        # Saving in progress.
+        if self.ticket:
+            event.ignore()
+            return
+
+        # If there are changes, ask if they should be saved.
         if self.isDirty():
             result = QMessageBox.question(self, self.windowTitle(),
                 u"Es gibt noch ungespeicherte Änderungen an diesem Buch.",
                 QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
 
             if result == QMessageBox.Save:
-                if not self.save():
-                    event.ignore()
-                    return
+                self.onSaveClicked()
+                event.ignore()
+                return
             elif result == QMessageBox.Cancel:
                 event.ignore()
                 return

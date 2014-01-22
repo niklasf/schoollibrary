@@ -27,6 +27,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from PySide.QtNetwork import *
 
+import sys
 import json
 import uuid
 
@@ -34,6 +35,7 @@ import book
 import user
 import util
 import progressspinner
+import network
 
 class Application(QApplication):
     """The main application class of the schoollibrary client."""
@@ -43,7 +45,7 @@ class Application(QApplication):
 
         # Instanciate services.
         self.settings = QSettings("Schoollibrary")
-        self.network = QNetworkAccessManager(self)
+        self.network = network.NetworkService(self)
         self.login = LoginDialog(self)
         self.users = user.UserListModel(self)
         self.books = book.BookTableModel(self)
@@ -287,11 +289,7 @@ class LoginDialog(QDialog):
         self.layoutStack.setCurrentIndex(1)
         self.progressSpinner.timer.start(100)
 
-        self.ticket = str(uuid.uuid4())
-
-        request = QNetworkRequest(url)
-        request.setAttribute(QNetworkRequest.User, self.ticket)
-        self.app.network.get(request)
+        self.ticket = self.app.network.http("GET", QNetworkRequest(url))
 
     def onCancel(self):
         self.layoutStack.setCurrentIndex(0)
@@ -301,7 +299,7 @@ class LoginDialog(QDialog):
     def onNetworkRequestFinished(self, reply):
         """Handles responses to the login request."""
         # Ensure the reply is meant for this dialog.
-        if reply.request().attribute(QNetworkRequest.User) != self.ticket:
+        if reply.request().attribute(network.Ticket) != self.ticket:
             return
         else:
             self.progressSpinner.timer.stop()
@@ -334,3 +332,7 @@ class LoginDialog(QDialog):
             self.app.settings.setValue("ApiPort", self.portBox.value())
             self.app.settings.setValue("ApiUserName", self.userNameBox.text())
             self.accept()
+
+if __name__ == "__main__":
+    app = Application(sys.argv)
+    sys.exit(app.exec_())
