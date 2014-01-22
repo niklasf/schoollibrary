@@ -67,75 +67,73 @@ class BookTableModel(QAbstractTableModel):
         return len(self.cache)
 
     def columnCount(self, parent=QModelIndex()):
-        return 9
+        return 10
 
     def data(self, index, role=Qt.DisplayRole):
         book = index.internalPointer()
 
         if role == Qt.DisplayRole:
             if index.column() == 0:
-                return book.title
+                lines = []
+                if book.signature:
+                    lines.append(book.signature)
+                lines.append(str(book.id))
+                if book.location:
+                    lines.append(book.location)
+                return "\n".join(lines)
             elif index.column() == 1:
-                return book.topic
+                return book.title
             elif index.column() == 2:
-                return book.volume
+                return book.topic
             elif index.column() == 3:
-                return book.publisher
+                return book.volume
             elif index.column() == 4:
-                return book.placeOfPublication
+                return book.publisher
             elif index.column() == 5:
-                return book.year
+                return book.placeOfPublication
             elif index.column() == 6:
-                return book.keywords
+                return book.year
             elif index.column() == 7:
-                return book.isbn
+                return book.keywords
             elif index.column() == 8:
+                return book.isbn
+            elif index.column() == 9:
                 return book.edition
         elif role == util.TitleAndDescriptionDelegate.DescriptionRole:
-            if index.column() == 0:
+            if index.column() == 1:
                 return book.authors
         elif role == Qt.TextAlignmentRole:
-            if index.column() in (2, 5, 7):
+            if index.column() in (0, 3, 6, 8):
                 return Qt.AlignCenter
+        elif role == Qt.FontRole:
+            if index.column() == 0:
+                font = QFont()
+                font.setPointSizeF(font.pointSize() * 0.8)
+                return font
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
                 if section == 0:
+                    return "Label"
+                if section == 1:
                     return "Buch"
-                elif section == 1:
-                    return "Thema"
                 elif section == 2:
-                    return "Band"
+                    return "Thema"
                 elif section == 3:
-                    return "Verlag"
+                    return "Band"
                 elif section == 4:
-                    return "Erscheinungsort"
+                    return "Verlag"
                 elif section == 5:
-                    return "Jahr"
+                    return "Erscheinungsort"
                 elif section == 6:
-                    return u"Schlüsselwörter"
+                    return "Jahr"
                 elif section == 7:
-                    return "ISBN"
+                    return u"Schlüsselwörter"
                 elif section == 8:
+                    return "ISBN"
+                elif section == 9:
                     return "Auflage"
-        else:
-            if role == Qt.DisplayRole:
-                book = self.cache.values()[section]
-                lines = []
-
-                if book.signature:
-                    lines.append(book.signature)
-
-                lines.append(str(book.id))
-
-                if book.location:
-                    lines.append(book.location)
-
-                return "\n".join(lines)
-
-            elif role == Qt.TextAlignmentRole:
-                return Qt.AlignCenter
 
     def save(self, book):
         """Saves a book to the server."""
@@ -209,6 +207,12 @@ class BookTableModel(QAbstractTableModel):
             self.cache[book.id] = book
 
         self.endResetModel()
+
+    def getSortProxy(self):
+        proxy = QSortFilterProxyModel()
+        proxy.setSourceModel(self)
+        proxy.setDynamicSortFilter(True)
+        return proxy
 
 class BookDialog(QDialog):
     """A product editing dialog."""

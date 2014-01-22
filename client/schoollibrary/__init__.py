@@ -92,10 +92,11 @@ class MainWindow(QMainWindow):
         centralLayout.addWidget(self.tabs)
 
         self.allBooksTable = QTableView()
-        self.allBooksTable.setModel(self.app.books)
+        self.allBooksTable.setModel(self.app.books.getSortProxy())
         self.allBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
-        self.allBooksTable.setItemDelegateForColumn(0, self.allBooksTable.titleAndDescriptionDelegate)
+        self.allBooksTable.setItemDelegateForColumn(1, self.allBooksTable.titleAndDescriptionDelegate)
         self.allBooksTable.model().modelReset.connect(self.onBooksReset)
+        self.allBooksTable.setSortingEnabled(True)
         self.addTab(u"Alle Bücher", self.allBooksTable)
 
     def addTab(self, title, widget):
@@ -108,7 +109,7 @@ class MainWindow(QMainWindow):
 
     def onBooksReset(self):
         self.allBooksTable.resizeColumnsToContents()
-        self.allBooksTable.setColumnWidth(0, 400)
+        self.allBooksTable.setColumnWidth(1, 400)
         self.allBooksTable.resizeRowsToContents()
 
     def initActions(self):
