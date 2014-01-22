@@ -100,7 +100,7 @@ var bookSchema = mongoose.Schema({
 });
 
 bookSchema.pre('save', function (next) {
-    this.isbn = validator.isISBN(this.isbn);
+    this.isbn = validator.isISBN(this.isbn) || '';
     next();
 });
 
