@@ -163,6 +163,7 @@ class BookTableModel(QAbstractTableModel):
             # Book created.
             data = json.loads(unicode(reply.readAll()))
             book = self.bookFromData(data)
+
             assert not book.id in self.cache
 
             self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
@@ -183,14 +184,24 @@ class BookTableModel(QAbstractTableModel):
             if match and request.attribute(network.HttpMethod) == "DELETE":
                 # Book deleted.
                 id = int(match.group(1))
-                row = self.cache.keys().index(id)
-                self.beginRemoveRows(QModelIndex(), row, row)
-                del self.cache[id]
-                self.endRemoveRows()
+                if id in self.cache:
+                    row = self.cache.keys().index(id)
+                    self.beginRemoveRows(QModelIndex(), row, row)
+                    del self.cache[id]
+                    self.endRemoveRows()
             elif match and request.attribute(network.HttpMethod) in ("GET", "PUT"):
                 # Book changed or reloaded.
-                # TODO: Implement.
-                pass
+                data = json.loads(unicode(reply.readAll()))
+                book = self.bookFromData(data)
+
+                if book.id in self.cache:
+                    bookIndex = self.indexFromBook(self.cache[book.id])
+                    self.cache[book.id] = book
+                    self.dataChanged.emit(bookIndex, self.index(bookIndex.row(), self.columnCount() - 1, QModelIndex()))
+                else:
+                    self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
+                    self.cache[book.id] = book
+                    self.endInsertRows()
 
     def bookFromData(self, data):
         book = Book()
