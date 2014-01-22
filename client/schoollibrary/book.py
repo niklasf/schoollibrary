@@ -685,6 +685,7 @@ class LendingDialog(QDialog):
         row.addStretch(1)
         self.lendButton = QPushButton(u"Für 14 Tage ausleihen")
         self.lendButton.setIcon(QIcon("data/basket_go_32.png"))
+        self.lendButton.clicked.connect(self.onLendButton)
         row.addWidget(self.lendButton)
         form.addRow(row)
 
@@ -695,6 +696,18 @@ class LendingDialog(QDialog):
     def initBusyIndicator(self):
         self.busyIndicator = busyindicator.BusyIndicator()
         return self.busyIndicator
+
+    def onLendButton(self):
+        user = self.lendUserBox.text().strip()
+
+        params = QUrl()
+        params.addQueryItem("_csrf", self.app.login.csrf)
+        params.addQueryItem("user", user)
+        params.addQueryItem("days", str(14))
+
+        path = "/book/%d/lending" % self.book.id
+        request = QNetworkRequest(self.app.login.getUrl(path))
+        self.app.network.http("POST", request, params.encodedQuery())
 
     def closeEvent(self, event):
         # Saving in progress.
