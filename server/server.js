@@ -322,8 +322,13 @@ app.put('/books/:id/', function (req, res) {
                 return res.send(400, err);
             }
 
+            response = book.toObject({ virtuals: true });
+            if (!req.library_lend) {
+                delete response.lending;
+            }
+
             res.setHeader('ETag', book.etag);
-            res.send(book);
+            res.json(response);
         });
     });
 });
