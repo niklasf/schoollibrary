@@ -60,7 +60,9 @@ var bookSchema = mongoose.Schema({
     },
     year: {
         type: Number,
-        default: null
+        default: null,
+        min: 0,
+        max: 3000
     },
     publisher: {
         type: String,
