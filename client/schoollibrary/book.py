@@ -29,6 +29,40 @@ import util
 import progressspinner
 import network
 
+def normalize_isbn(isbn):
+    isbn = isbn.replace("-", "").replace(" ", "").strip().upper()
+
+    if not isbn:
+        return isbn
+    elif re.match(r"^([0-9]{9}X|[0-9]{10})$", isbn):
+        checksum = 0
+
+        for i in range(0, 9):
+            checksum += (i + 1) * int(isbn[i])
+
+        if isbn[9] == "X":
+            checksum += 10 * 10
+        else:
+            checksum += 10 * int(isbn[9])
+
+        if checksum % 11 == 0:
+            return isbn
+        else:
+            raise ValueError("Invalid ISBN-10.")
+    elif re.match(r"^([0-9]{13})$", isbn):
+        factor = [ 1, 3 ]
+        checksum = 0
+
+        for i in range(0, 12):
+            checksum += factor[i % 2] * int(isbn[i])
+
+        if (int(isbn[12]) - ((10 - (checksum % 10)) % 10)) == 0:
+            return isbn
+        else:
+            raise ValueError("Invalid ISBN-13.")
+    else:
+        raise ValueError("Invalid ISBN.")
+
 class Book(object):
     """A book object."""
 
@@ -406,16 +440,41 @@ class BookDialog(QDialog):
 
     def save(self):
         """Validates and saves the current product."""
+        try:
+            isbn = normalize_isbn(self.isbnBox.text())
+        except ValueError:
+            QMessageBox.warning(self, self.windowTitle(), u"Ungültige ISBN.")
+            return False
+
+        title = self.titleBox.text().strip()
+        if not title:
+            QMessageBox.warning(self, self.windowTitle(), "Ein Titel ist erforderlich.")
+            return False
+
+        year = self.yearBox.text().strip()
+        if year:
+            try:
+                year = int(year)
+            except ValueError:
+                QMessageBox.warning(self, self.windowTitle(), u"Ungültige Eingabe für das Veröffentlichungsjahr.")
+                return False
+
+            if year < 0 or year > 3000:
+                QMessageBox.warning(self, self.windowTitle(), u"Jahr ist außerhalb das gültigen Bereichs.")
+                return False
+        else:
+            year = None
+
         params = QUrl()
         params.addQueryItem("_csrf", self.app.login.csrf)
-        params.addQueryItem("isbn", self.isbnBox.text())
-        params.addQueryItem("title", self.titleBox.text())
+        params.addQueryItem("isbn", isbn)
+        params.addQueryItem("title", title)
         params.addQueryItem("authors", self.authorsBox.text())
         params.addQueryItem("topic", self.topicBox.text())
         params.addQueryItem("keywords", self.keywordsBox.text())
         params.addQueryItem("signature", self.signatureBox.text())
         params.addQueryItem("location", self.locationBox.text())
-        params.addQueryItem("year", self.yearBox.text())
+        params.addQueryItem("year", str(year) if year else "")
         params.addQueryItem("publisher", self.publisherBox.text())
         params.addQueryItem("placeOfPublication", self.placeOfPublicationBox.text())
         params.addQueryItem("volume", self.volumeBox.text())
