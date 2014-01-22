@@ -97,6 +97,8 @@ class MainWindow(QMainWindow):
 
         self.allBooksTable = QTableView()
         self.allBooksTable.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.allBooksTable.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.allBooksTable.customContextMenuRequested.connect(self.onAllBooksCustomContextMenuRequested)
         self.allBooksTable.setModel(self.app.books.getSortProxy())
         self.allBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
         self.allBooksTable.setItemDelegateForColumn(1, self.allBooksTable.titleAndDescriptionDelegate)
@@ -161,6 +163,9 @@ class MainWindow(QMainWindow):
         bookMenu.addSeparator()
         bookMenu.addAction(self.deleteBookAction)
 
+        self.contextMenu = QMenu()
+        self.contextMenu.addAction(self.deleteBookAction)
+
     def initToolBar(self):
         """Creates the toolbar."""
         toolBar = self.addToolBar("Test")
@@ -211,6 +216,11 @@ class MainWindow(QMainWindow):
         table = self.allBooksTable
         model = table.model()
         return [model.indexToBook(index) for index in table.selectedIndexes() if index.column() == 0]
+
+    def onAllBooksCustomContextMenuRequested(self, position):
+        """Opens the context menu for all books."""
+        if self.selectedBooks():
+            self.contextMenu.exec_(self.allBooksTable.viewport().mapToGlobal(position))
 
     def closeEvent(self, event):
         """Saves the geometry when the window is closed."""
