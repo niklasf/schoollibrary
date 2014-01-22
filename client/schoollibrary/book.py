@@ -281,9 +281,14 @@ class BookTableModel(QAbstractTableModel):
         else:
             return index.internalPointer()
 
-    def getSortProxy(self):
+    def getProxy(self):
         proxy = BookTableSortFilterProxyModel()
         proxy.setSourceModel(self)
+        return proxy
+
+    def getLentProxy(self):
+        proxy = self.getProxy()
+        proxy.lentOnly = True
         return proxy
 
 class BookTableSortFilterProxyModel(QSortFilterProxyModel):
@@ -294,6 +299,8 @@ class BookTableSortFilterProxyModel(QSortFilterProxyModel):
         self.setDynamicSortFilter(True)
         self.setSortRole(Qt.UserRole)
 
+        self.lentOnly = False
+
     def indexToBook(self, index):
         """Gets the book associated with an index."""
         return self.sourceModel().indexToBook(self.mapToSource(index))
@@ -301,6 +308,15 @@ class BookTableSortFilterProxyModel(QSortFilterProxyModel):
     def indexFromBook(self, book):
         """Gets the index associated with a book."""
         return self.mapFromSource(self.sourceModel().indexFromBook(book))
+
+    def filterAcceptsRow(self, row, parent=QModelIndex()):
+        """Checks if a book should be displayed."""
+        if self.lentOnly:
+            book = self.sourceModel().indexToBook(self.sourceModel().index(row, 0, parent))
+            if not book.lent:
+                return False
+
+        return True
 
 class BookDialog(QDialog):
     """A product editing dialog."""
@@ -705,9 +721,11 @@ class LendingDialog(QDialog):
         params.addQueryItem("user", user)
         params.addQueryItem("days", str(14))
 
-        path = "/book/%d/lending" % self.book.id
+        path = "/books/%d/lending" % self.book.id
         request = QNetworkRequest(self.app.login.getUrl(path))
-        self.app.network.http("POST", request, params.encodedQuery())
+        request.setHeader(QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
+        self.ticket = self.app.network.http("POST", request, params.encodedQuery())
+        self.updateValues(True)
 
     def closeEvent(self, event):
         # Saving in progress.

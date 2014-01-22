@@ -95,12 +95,23 @@ class MainWindow(QMainWindow):
         self.allBooksTable.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.allBooksTable.setContextMenuPolicy(Qt.CustomContextMenu)
         self.allBooksTable.customContextMenuRequested.connect(self.onAllBooksCustomContextMenuRequested)
-        self.allBooksTable.setModel(self.app.books.getSortProxy())
+        self.allBooksTable.setModel(self.app.books.getProxy())
         self.allBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
         self.allBooksTable.setItemDelegateForColumn(1, self.allBooksTable.titleAndDescriptionDelegate)
-        self.allBooksTable.model().modelReset.connect(self.onBooksReset)
+        self.allBooksTable.model().modelReset.connect(self.onAllBooksReset)
         self.allBooksTable.setSortingEnabled(True)
         self.addTab(u"Alle Bücher", self.allBooksTable)
+
+        self.lentBooksTable = QTableView()
+        self.lentBooksTable.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.lentBooksTable.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.lentBooksTable.customContextMenuRequested.connect(self.onLentBooksCustomContextMenuRequested)
+        self.lentBooksTable.setModel(self.app.books.getLentProxy())
+        self.lentBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
+        self.lentBooksTable.setItemDelegateForColumn(1, self.lentBooksTable.titleAndDescriptionDelegate)
+        self.lentBooksTable.model().modelReset.connect(self.onLentBooksReset)
+        self.lentBooksTable.setSortingEnabled(True)
+        self.addTab(u"Ausgeliehene Bücher", self.lentBooksTable)
 
     def addTab(self, title, widget):
         page = QWidget()
@@ -110,10 +121,15 @@ class MainWindow(QMainWindow):
         layout.addWidget(widget)
         return self.tabs.addTab(page, title)
 
-    def onBooksReset(self):
+    def onAllBooksReset(self):
         self.allBooksTable.resizeColumnsToContents()
         self.allBooksTable.setColumnWidth(1, 400)
         self.allBooksTable.resizeRowsToContents()
+
+    def onLentBooksReset(self):
+        self.lentBooksTable.resizeColumnsToContents()
+        self.lentBooksTable.setColumnWidth(1, 400)
+        self.lentBooksTable.resizeRowsToContents()
 
     def initActions(self):
         """Creates actions."""
@@ -234,7 +250,10 @@ class MainWindow(QMainWindow):
                 return
 
     def selectedBooks(self):
-        table = self.allBooksTable
+        if self.tabs.currentIndex() == 0:
+            table = self.allBooksTable
+        elif self.tabs.currentIndex() == 1:
+            table = self.lentBooksTable
         model = table.model()
         return [model.indexToBook(index) for index in table.selectedIndexes() if index.column() == 0]
 
@@ -242,6 +261,11 @@ class MainWindow(QMainWindow):
         """Opens the context menu for all books."""
         if self.selectedBooks():
             self.contextMenu.exec_(self.allBooksTable.viewport().mapToGlobal(position))
+
+    def onLentBooksCustomContextMenuRequested(self, position):
+        """Opens the context menu for lent books."""
+        if self.selectedBooks():
+            self.contextMenu.exec_(self.lentBooksTable.viewport().mapToGlobal(position))
 
     def closeEvent(self, event):
         """Saves the geometry when the window is closed."""
