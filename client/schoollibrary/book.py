@@ -253,6 +253,28 @@ class BookTableSortFilterProxyModel(QSortFilterProxyModel):
 class BookDialog(QDialog):
     """A product editing dialog."""
 
+    dialogs = dict()
+
+    @classmethod
+    def open(cls, app, book, parent):
+        """Opens a new dialog or sets the focus to an existing one."""
+        if book:
+            if not book.id in cls.dialogs or not cls.dialogs[book.id].isVisible():
+                cls.dialogs[book.id] = BookDialog(app, book, parent)
+                cls.dialogs[book.id].show()
+            else:
+                cls.dialogs[book.id].activateWindow()
+            return cls.dialogs[book.id]
+        else:
+            dialog = BookDialog(app, book, parent)
+            dialog.show()
+            return dialog
+
+    @classmethod
+    def ensureClosed(cls, book):
+        if book.id in cls.dialogs:
+            cls.dialogs[book.id].close()
+
     def __init__(self, app, book, parent):
         super(BookDialog, self).__init__(parent)
         self.app = app
@@ -412,6 +434,13 @@ class BookDialog(QDialog):
         # Saving in progress.
         if self.ticket:
             event.ignore()
+            return
+
+        # Maintain list of open dialogs.
+        if self.book.id in BookDialog.dialogs:
+            del BookDialog.dialogs[self.book.id]
+        elif self.book.id:
+            event.accept()
             return
 
         # If there are changes, ask if they should be saved.

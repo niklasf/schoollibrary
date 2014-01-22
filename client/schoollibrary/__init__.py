@@ -144,6 +144,9 @@ class MainWindow(QMainWindow):
         self.addBookAction.setIcon(QIcon("data/address_book_add_32.png"))
         self.addBookAction.triggered.connect(self.onAddBookAction)
 
+        self.editBookAction = QAction("Buch bearbeiten", self)
+        self.editBookAction.triggered.connect(self.onEditBookAction)
+
         self.deleteBookAction = QAction(u"Buch löschen", self)
         self.deleteBookAction.setShortcut("Del")
         self.deleteBookAction.triggered.connect(self.onDeleteBookAction)
@@ -161,9 +164,11 @@ class MainWindow(QMainWindow):
         bookMenu = self.menuBar().addMenu(u"Bücher")
         bookMenu.addAction(self.addBookAction)
         bookMenu.addSeparator()
+        bookMenu.addAction(self.editBookAction)
         bookMenu.addAction(self.deleteBookAction)
 
         self.contextMenu = QMenu()
+        self.contextMenu.addAction(self.editBookAction)
         self.contextMenu.addAction(self.deleteBookAction)
 
     def initToolBar(self):
@@ -191,8 +196,12 @@ class MainWindow(QMainWindow):
 
     def onAddBookAction(self):
         """Handles the add book action."""
-        dialog = book.BookDialog(self.app, None, self)
-        dialog.show()
+        book.BookDialog.open(self.app, None, self)
+
+    def onEditBookAction(self):
+        """Handles the edit book action."""
+        for currentBook in self.selectedBooks():
+            book.BookDialog.open(self.app, currentBook, self)
 
     def onDeleteBookAction(self):
         """Handles the delete book action."""
@@ -202,13 +211,14 @@ class MainWindow(QMainWindow):
         if len(books) > 1:
             buttons = buttons | QMessageBox.Cancel
 
-        for book in books:
+        for currentBook in books:
             result = QMessageBox.question(self, u"Buch löschen",
-                u"Möchten Sie das Buch »%s« wirklich löschen?" % book.title,
+                u"Möchten Sie das Buch »%s« wirklich löschen?" % currentBook.title,
                 buttons)
 
             if result == QMessageBox.Yes:
-                self.app.books.delete(book)
+                book.BookDialog.ensureClosed(currentBook)
+                self.app.books.delete(currentBook)
             elif result == QMessageBox.Cancel:
                 return
 
