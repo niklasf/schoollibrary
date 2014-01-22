@@ -153,6 +153,7 @@ class BookTableModel(QAbstractTableModel):
     def delete(self, book):
         path = "/books/%d/" % book.id
         request = QNetworkRequest(self.app.login.getUrl(path))
+        request.setRawHeader(QByteArray("X-CSRF-Token"), QByteArray(self.app.login.csrf))
         return self.app.network.http("DELETE", request)
 
     def onNetworkRequestFinished(self, reply):
