@@ -96,6 +96,7 @@ class MainWindow(QMainWindow):
         centralLayout.addWidget(self.tabs)
 
         self.allBooksTable = QTableView()
+        self.allBooksTable.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.allBooksTable.setModel(self.app.books.getSortProxy())
         self.allBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
         self.allBooksTable.setItemDelegateForColumn(1, self.allBooksTable.titleAndDescriptionDelegate)

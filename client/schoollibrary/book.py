@@ -22,6 +22,7 @@ from PySide.QtNetwork import *
 
 import json
 import uuid
+import re
 
 import indexed
 import util
@@ -59,6 +60,8 @@ class BookTableModel(QAbstractTableModel):
         self.app = app
         self.app.network.finished.connect(self.onNetworkRequestFinished)
         self.cache = indexed.IndexedOrderedDict()
+
+        self.bookPathPattern = re.compile(r"^\/books\/([0-9]+)\/$")
 
     def index(self, row, column, parent=QModelIndex()):
         if parent.isValid() or not self.hasIndex(row, column, parent):
@@ -151,6 +154,7 @@ class BookTableModel(QAbstractTableModel):
         request = reply.request()
 
         if request.url().path() == "/books/" and request.attribute(network.HttpMethod) == "POST":
+            # Book created.
             data = json.loads(unicode(reply.readAll()))
             book = self.bookFromData(data)
             assert not book.id in self.cache
@@ -159,6 +163,7 @@ class BookTableModel(QAbstractTableModel):
             self.cache[book.id] = book
             self.endInsertRows()
         elif request.url().path() == "/books/" and request.attribute(network.HttpMethod) == "GET":
+            # Book list reloaded.
             self.beginResetModel()
             self.cache.clear()
 
@@ -167,6 +172,19 @@ class BookTableModel(QAbstractTableModel):
                 self.cache[book.id] = book
 
             self.endResetModel()
+        else:
+            match = self.bookPathPattern.match(request.url().path())
+            if match and request.attribute(network.HttpMethod) == "DELETE":
+                # Book deleted.
+                id = int(match.group(1))
+                row = self.cache.keys().index(id)
+                self.beginRemoveRows(QModelIndex(), row, row)
+                del self.cache[id]
+                self.endRemoveRows()
+            elif match and request.attribute(network.HttpMethod) in ("GET", "PUT"):
+                # Book changed or reloaded.
+                # TODO: Implement.
+                pass
 
     def bookFromData(self, data):
         book = Book()
@@ -191,6 +209,13 @@ class BookTableModel(QAbstractTableModel):
             book.lendingDays = data["lending"]["days"]
 
         return book
+
+    def indexFromBook(self, book):
+        books = self.cache.viewvalues()
+        if book in books:
+            return self.createIndex(self.cache.keys().index(book.id), 0, book)
+        else:
+            return QModelIndex()
 
     def getSortProxy(self):
         proxy = QSortFilterProxyModel()
