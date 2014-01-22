@@ -55,7 +55,7 @@ class UserListModel(QAbstractListModel):
         self.cache = []
 
         while reply.canReadLine():
-            self.cache.append(unicode(reply.readLine()).strip())
+            self.cache.append(str(reply.readLine()).strip())
 
         self.cache.sort()
 

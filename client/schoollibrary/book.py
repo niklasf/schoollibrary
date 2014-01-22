@@ -201,7 +201,7 @@ class BookTableModel(QAbstractTableModel):
 
         if request.url().path() == "/books/" and request.attribute(network.HttpMethod) == "POST":
             # Book created.
-            data = json.loads(unicode(reply.readAll()))
+            data = json.loads(str(reply.readAll()))
             book = self.bookFromData(data)
 
             assert not book.id in self.cache
@@ -214,7 +214,7 @@ class BookTableModel(QAbstractTableModel):
             self.beginResetModel()
             self.cache.clear()
 
-            for data in json.loads(unicode(reply.readAll())).values():
+            for data in json.loads(str(reply.readAll())).values():
                 book = self.bookFromData(data)
                 self.cache[book.id] = book
 
@@ -231,7 +231,7 @@ class BookTableModel(QAbstractTableModel):
                     self.endRemoveRows()
             elif match and request.attribute(network.HttpMethod) in ("GET", "PUT"):
                 # Book changed or reloaded.
-                data = json.loads(unicode(reply.readAll()))
+                data = json.loads(str(reply.readAll()))
                 book = self.bookFromData(data)
 
                 if book.id in self.cache:
