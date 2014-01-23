@@ -1,0 +1,4 @@
+# Defaults for the schoollibrary-server initscript
+
+# The port to listen on.
+PORT=5000

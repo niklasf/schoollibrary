@@ -1,0 +1,9 @@
+etc /
+usr/share/iserv usr/share
+usr/share/schoollibrary/node_modules usr/share/schoollibrary
+usr/share/schoollibrary/server.js usr/share/schoollibrary
+usr/share/schoollibrary/package.json usr/share/schoollibrary
+usr/share/schoollibrary/users-htpasswd.pl usr/share/schoollibrary
+usr/share/schoollibrary/users-iserv.php usr/share/schoollibrary
+usr/share/schoollibrary/auth-htpasswd.pl usr/share/schoollibrary
+usr/share/schoollibrary/auth-iserv.php usr/share/schoollibrary

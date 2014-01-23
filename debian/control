@@ -5,9 +5,20 @@ Maintainer: Niklas Fiekas <niklas.fiekas@tu-clausthal.de>
 Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.4
 
+Package: schoollibrary-server
+Architecture: all
+Depends: nodejs, ${misc:Depends}
+Description: school library api and database
+ Allows school libraries to keep track of their books in a
+ database. Also keeps track of who lent a book and when it
+ is due for return.
+ .
+ The authentication backend is flexibly configurable.
+ Defaults include htusers and IServ.
+
 Package: winst-schoollibrary
 Architecture: all
 Depends: ${misc:Depends}
-Description: Manage a school library
+Description: manage a school library
  opsi.org installation package for the school library
  client application.
