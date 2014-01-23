@@ -7,7 +7,7 @@ Standards-Version: 3.9.4
 
 Package: schoollibrary-server
 Architecture: all
-Depends: nodejs, ${misc:Depends}
+Depends: nodejs, libcrypt-passwdmd5-perl, ${misc:Depends}
 Description: school library api and database
  Allows school libraries to keep track of their books in a
  database. Also keeps track of who lent a book and when it
