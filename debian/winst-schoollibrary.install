@@ -1,0 +1,5 @@
+debian/changelog srv/deploy/install/schoollibrary/
+control srv/deploy/install/schoollibrary/
+install.ins srv/deploy/install/schoollibrary/
+logo.png srv/deploy/install/schoollibrary/
+remove.ins srv/deploy/install/schoollibrary/

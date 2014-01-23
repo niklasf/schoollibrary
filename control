@@ -1,0 +1,9 @@
+[Product]
+type: localboot
+id: schoollibrary
+name: Schoollibrary
+description: Manage a school library.
+version: 0.1
+packageVersion: 0.1
+setupScript: install.ins
+uninstallScript: remove.ins
