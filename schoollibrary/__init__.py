@@ -36,6 +36,7 @@ import user
 import util
 import busyindicator
 import network
+import os
 
 class Application(QApplication):
     """The main application class of the schoollibrary client."""
@@ -49,6 +50,12 @@ class Application(QApplication):
         self.login = LoginDialog(self)
         self.users = user.UserListModel(self)
         self.books = book.BookTableModel(self)
+
+    def data(self, path):
+        if os.path.exists("usr/share/schoollibrary"):
+            return "usr/share/schoollibrary/" + path
+        else:
+            return "/usr/share/schoollibrary/" + path
 
     def exec_(self):
         # Login.
@@ -153,11 +160,11 @@ class MainWindow(QMainWindow):
 
         self.addBookAction = QAction(u"Buch hinzufügen", self)
         self.addBookAction.setShortcut("Ctrl+N")
-        self.addBookAction.setIcon(QIcon("data/address_book_add_32.png"))
+        self.addBookAction.setIcon(QIcon(self.app.data("add-book.png")))
         self.addBookAction.triggered.connect(self.onAddBookAction)
 
         self.lendingAction = QAction(u"Ausleihe", self)
-        self.lendingAction.setIcon(QIcon("data/basket_32.png"))
+        self.lendingAction.setIcon(QIcon(self.app.data("basket.png")))
         self.lendingAction.triggered.connect(self.onLendingAction)
 
         self.editBookAction = QAction("Buch bearbeiten", self)

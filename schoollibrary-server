@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ -f usr/share/schoollibrary/server.js ]
+then
+    nodejs usr/share/schoollibrary/server.js
+else
+    nodejs /usr/share/schoollibrary/server.js
+fi
