@@ -214,9 +214,22 @@ class BookTableModel(QAbstractTableModel):
             self.beginResetModel()
             self.cache.clear()
 
-            for data in json.loads(str(reply.readAll())).values():
-                book = self.bookFromData(data)
-                self.cache[book.id] = book
+            print "reponse"
+            b = reply.readAll()
+            print "bytes"
+            s = str(b)
+            print "string"
+            j = json.loads(s, object_hook=self.bookFromData)
+            print "json"
+            v = j.values()
+            print "values"
+
+            for data in v:
+                #book = self.bookFromData(data)
+                #self.cache[book.id] = book
+                self.cache[data.id] = data
+
+            print "cached"
 
             self.endResetModel()
         else:
@@ -251,6 +264,7 @@ class BookTableModel(QAbstractTableModel):
         book.title = data["title"]
         book.authors = data["authors"]
         book.volume = data["volume"]
+        book.edition = data["edition"]
         book.topic = data["topic"]
         book.keywords = data["keywords"]
         book.signature = data["signature"]
@@ -406,6 +420,9 @@ class BookDialog(QDialog):
         self.placeOfPublicationBox = QLineEdit()
         form.addRow(u"Veröffentlichungsort:", self.placeOfPublicationBox)
 
+        self.editionBox = QLineEdit()
+        form.addRow("Auflage:", self.editionBox)
+
         self.lendableBox = QCheckBox()
         form.addRow("Ausleihbar:", self.lendableBox)
 
@@ -440,6 +457,7 @@ class BookDialog(QDialog):
         self.yearBox.setText(str(self.book.year) if self.book.year else "")
         self.publisherBox.setText(self.book.publisher)
         self.placeOfPublicationBox.setText(self.book.placeOfPublication)
+        self.editionBox.setText(self.book.edition)
         self.lendableBox.setChecked(self.book.lendable)
 
     def initBusyIndicator(self):
@@ -495,6 +513,9 @@ class BookDialog(QDialog):
         if self.placeOfPublicationBox.text() != self.book.placeOfPublication:
             return True
 
+        if self.editionBox.text() != self.book.edition:
+            return True
+
         if self.lendableBox.isChecked() != self.book.lendable:
             return True
 
@@ -540,6 +561,7 @@ class BookDialog(QDialog):
         params.addQueryItem("publisher", self.publisherBox.text())
         params.addQueryItem("placeOfPublication", self.placeOfPublicationBox.text())
         params.addQueryItem("volume", self.volumeBox.text())
+        params.addQueryItem("edition", self.editionBox.text())
         params.addQueryItem("lendable", "true" if self.lendableBox.isChecked() else "false")
 
         if not self.book.id:
