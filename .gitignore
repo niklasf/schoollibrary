@@ -1,6 +1,9 @@
 *.py[cd]
 *.swp
 
+debian/files
+debian/*.substvars
+debian/*.debhelper
 debian/*.debhelper.log
 debian/winst-schoollibrary
 debian/schoollibrary-client
