@@ -1,3 +1,3 @@
 #!/bin/bash
 
-HTPASSWD=htpasswd ./users-htpasswd.pl
+HTPASSWD=etc/schoollibrary/htpasswd ./users-htpasswd.pl
