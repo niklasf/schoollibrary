@@ -1,0 +1,12 @@
+# logrotate configuration for schoollibrary-server
+
+/var/log/schoollibrary.log {
+    weekly
+    rotate 4
+    compress
+    delaycompress
+    notifempty
+    postrotate
+        /sbin/restart schoollibrary-server
+    endscript
+}

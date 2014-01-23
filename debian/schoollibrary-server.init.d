@@ -20,12 +20,12 @@
 
 case "$1" in
   start)
-    start-stop-daemon --start --quiet --make-pidfile --pidfile /var/run/schoollibrary.pid --background --exec /bin/bash -- -c "/usr/bin/nodejs /usr/share/schoollibrary/server.js > /var/log/schoollibrary.log 2>&1"
+    start-stop-daemon --start --quiet --make-pidfile --pidfile /var/run/schoollibrary.pid --background --startas /bin/bash -- -c "exec /usr/bin/nodejs /usr/share/schoollibrary/server.js >> /var/log/schoollibrary.log 2>&1"
     log_daemon_msg "Started schoollibrary-server"
     ;;
 
   stop)
-    start-stop-daemon --stop --retry forever/QUIT/1 --quiet --oknodo --pidfile /var/run/schoollibrary.pid --exec /usr/bin/nodejs
+    start-stop-daemon --stop --retry forever/QUIT/1 --quiet --oknodo --pidfile /var/run/schoollibrary.pid
     rm -f /var/run/schoollibrary.pid
     log_daemon_msg "Stopped schoollibrary-server"
     ;;
