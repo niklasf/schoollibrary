@@ -62,10 +62,6 @@ class Application(QApplication):
         if not self.login.exec_():
             return 0
 
-        # Load data.
-        self.users.reload()
-        self.books.reload()
-
         # Open the main window and run the event loop.
         mainWindow = MainWindow(self)
         mainWindow.show()
@@ -80,7 +76,15 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Schulbibliothek")
 
-        self.initUi()
+        self.app.network.finished.connect(self.onNetworkRequestFinished)
+
+        self.layoutStack = QStackedLayout()
+        self.layoutStack.addWidget(self.initTabs())
+        self.layoutStack.addWidget(self.initBusyIndicator())
+        centralWidget = QWidget()
+        centralWidget.setLayout(self.layoutStack)
+        self.setCentralWidget(centralWidget)
+
         self.initActions()
         self.initMenu()
         self.initToolBar()
@@ -88,15 +92,12 @@ class MainWindow(QMainWindow):
         # Restore geometry.
         self.restoreGeometry(self.app.settings.value("MainWindowGeometry"))
 
-    def initUi(self):
-        """Creates the central tab widget."""
-        centralWidget = QWidget()
-        centralLayout = QHBoxLayout()
-        centralWidget.setLayout(centralLayout)
-        self.setCentralWidget(centralWidget)
+        # Load data.
+        self.ticket = None
+        self.onRefreshAction()
 
+    def initTabs(self):
         self.tabs = QTabWidget()
-        centralLayout.addWidget(self.tabs)
 
         self.allBooksTable = QTableView()
         self.allBooksTable.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -119,6 +120,20 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.model().modelReset.connect(self.onLentBooksReset)
         self.lentBooksTable.setSortingEnabled(True)
         self.addTab(u"Ausgeliehene Bücher", self.lentBooksTable)
+
+        return self.tabs
+
+    def initBusyIndicator(self):
+        self.busyIndicator = busyindicator.BusyIndicator()
+        return self.busyIndicator
+
+    def showBusyIndicator(self, show):
+        if show:
+            self.layoutStack.setCurrentIndex(1)
+            self.busyIndicator.setEnabled(True)
+        else:
+            self.layoutStack.setCurrentIndex(0)
+            self.busyIndicator.setEnabled(False)
 
     def addTab(self, title, widget):
         page = QWidget()
@@ -210,8 +225,9 @@ class MainWindow(QMainWindow):
 
     def onRefreshAction(self):
         """Handles the refresh action."""
+        self.showBusyIndicator(True)
         self.app.users.reload()
-        self.app.books.reload()
+        self.ticket = self.app.books.reload()
 
     def onAboutAction(self):
         """Handles the about action."""
@@ -273,6 +289,11 @@ class MainWindow(QMainWindow):
         """Opens the context menu for lent books."""
         if self.selectedBooks():
             self.contextMenu.exec_(self.lentBooksTable.viewport().mapToGlobal(position))
+
+    def onNetworkRequestFinished(self, reply):
+        if reply.request().attribute(network.Ticket) == self.ticket:
+            self.ticket = None
+            self.showBusyIndicator(False)
 
     def closeEvent(self, event):
         """Saves the geometry when the window is closed."""

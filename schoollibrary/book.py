@@ -214,22 +214,11 @@ class BookTableModel(QAbstractTableModel):
             self.beginResetModel()
             self.cache.clear()
 
-            print "reponse"
-            b = reply.readAll()
-            print "bytes"
-            s = str(b)
-            print "string"
-            j = json.loads(s, object_hook=self.bookFromData)
-            print "json"
-            v = j.values()
-            print "values"
+            books = json.loads(str(reply.readAll()))
 
-            for data in v:
-                #book = self.bookFromData(data)
-                #self.cache[book.id] = book
-                self.cache[data.id] = data
-
-            print "cached"
+            for key in books:
+                book = self.bookFromData(books[key])
+                self.cache[book.id] = book
 
             self.endResetModel()
         else:
