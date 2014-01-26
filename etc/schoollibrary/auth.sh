@@ -21,4 +21,4 @@ HTGROUPS=/etc/schoollibrary/htgroups \
     /usr/share/schoollibrary/auth-htpasswd.pl $1 $2
 
 # Uncomment to allow authenticating against IServ.
-#sudo -u www-data php /usr/share/school-library/auth-iserv.php $1 $2
+#sudo -u www-data php /usr/share/schoollibrary/auth-iserv.php $1 $2
