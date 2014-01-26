@@ -320,23 +320,9 @@ class LoginDialog(QDialog):
     def initForm(self):
         form = QFormLayout()
 
-        row = QHBoxLayout()
-        self.schemaBox = QComboBox()
-        self.schemaBox.addItem("http")
-        self.schemaBox.addItem("https")
-        self.schemaBox.setCurrentIndex(0 if self.app.settings.value("ApiScheme", "http") else 1)
-        row.addWidget(self.schemaBox)
-        row.addWidget(QLabel("://"))
-        self.hostBox = QLineEdit()
-        self.hostBox.setText(self.app.settings.value("ApiHost", "localhost"))
-        row.addWidget(self.hostBox)
-        self.portBox = QSpinBox()
-        self.portBox.setMinimum(1)
-        self.portBox.setMaximum(65535)
-        self.portBox.setValue(int(self.app.settings.value("ApiPort", 5000)))
-        row.addWidget(QLabel(":"))
-        row.addWidget(self.portBox)
-        form.addRow("Verbindung:", row)
+        self.urlBox = QLineEdit()
+        self.urlBox.setText(self.app.settings.value("ApiUrl", "http://localhost:5000/"))
+        form.addRow("URL:", self.urlBox)
 
         self.userNameBox = QLineEdit()
         self.userNameBox.setText(self.app.settings.value("ApiUserName", ""))
@@ -379,15 +365,16 @@ class LoginDialog(QDialog):
 
     def getUrl(self, path=None):
         """Gets a URL with the settings chosen in the dialog."""
-        url = QUrl()
-        url.setScheme(self.schemaBox.itemText(self.schemaBox.currentIndex()))
-        url.setHost(self.hostBox.text())
-        url.setPort(self.portBox.value())
+        url = QUrl(self.urlBox.text())
         url.setUserName(self.userNameBox.text())
         url.setPassword(self.passwordBox.text())
 
+        basepath = url.path()
+        if basepath.endswith("/"):
+            basepath = basepath[:-1]
+
         if path:
-            url.setPath(path)
+            url.setPath(basepath + path)
 
         return url
 
@@ -440,10 +427,7 @@ class LoginDialog(QDialog):
 
         # Finish dialog.
         if self.isVisible():
-            self.app.settings.setValue("ApiScheme", "http" if self.schemaBox.currentIndex() == 0 else "https")
-            self.app.settings.setValue("ApiHost", self.hostBox.text())
-            self.app.settings.setValue("ApiPort", self.portBox.value())
-            self.app.settings.setValue("ApiUserName", self.userNameBox.text())
+            self.app.settings.setValue("ApiUrl", self.urlBox.text())
             self.accept()
 
 if __name__ == "__main__":

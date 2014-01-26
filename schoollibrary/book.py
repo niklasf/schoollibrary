@@ -97,8 +97,8 @@ class BookTableModel(QAbstractTableModel):
         self.app.network.finished.connect(self.onNetworkRequestFinished)
         self.cache = indexed.IndexedOrderedDict()
 
-        self.bookPathPattern = re.compile(r"^\/books\/([0-9]+)\/$")
-        self.lendingPathPattern = re.compile(r"^\/books\/([0-9]+)\/lending$")
+        self.bookPathPattern = re.compile(r".*\/books\/([0-9]+)\/$")
+        self.lendingPathPattern = re.compile(r".*\/books\/([0-9]+)\/lending$")
 
     def index(self, row, column, parent=QModelIndex()):
         if parent.isValid() or not self.hasIndex(row, column, parent):
@@ -209,8 +209,9 @@ class BookTableModel(QAbstractTableModel):
         request = reply.request()
         status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
         method = request.attribute(network.HttpMethod)
+        path = request.url().path()
 
-        if request.url().path() == "/books/" and request.attribute(network.HttpMethod) == "POST":
+        if path.endswith("/books/") and request.attribute(network.HttpMethod) == "POST":
             # Book created.
             data = json.loads(str(reply.readAll()))
             book = self.bookFromData(data)
@@ -220,12 +221,13 @@ class BookTableModel(QAbstractTableModel):
             self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
             self.cache[book.id] = book
             self.endInsertRows()
-        elif request.url().path() == "/books/" and request.attribute(network.HttpMethod) == "GET":
+        elif path.endswith("/books/") and request.attribute(network.HttpMethod) == "GET":
             # Book list reloaded.
             self.beginResetModel()
             self.cache.clear()
 
-            books = json.loads(str(reply.readAll()))
+            blob = str(reply.readAll())
+            books = json.loads(blob)
 
             for key in books:
                 book = self.bookFromData(books[key])
@@ -233,7 +235,7 @@ class BookTableModel(QAbstractTableModel):
 
             self.endResetModel()
         else:
-            match = self.bookPathPattern.match(request.url().path())
+            match = self.bookPathPattern.match(path)
             if match and request.attribute(network.HttpMethod) == "DELETE":
                 # Book deleted.
                 id = int(match.group(1))
@@ -257,7 +259,7 @@ class BookTableModel(QAbstractTableModel):
                     self.endInsertRows()
 
         # Lending updated.
-        match = self.lendingPathPattern.match(request.url().path())
+        match = self.lendingPathPattern.match(path)
         if match:
             id = int(match.group(1))
             if not id in self.cache:

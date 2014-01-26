@@ -21,12 +21,13 @@ from PySide.QtNetwork import *
 
 import uuid
 
-Ticket = QNetworkRequest.User
-HttpMethod = QNetworkRequest.UserMax
+Ticket = QNetworkRequest.Attribute(QNetworkRequest.User)
+HttpMethod = QNetworkRequest.Attribute(QNetworkRequest.User + 1)
 
 class NetworkService(QNetworkAccessManager):
-    def __init__(self, parent=None):
+    def __init__(self, app, parent=None):
         super(NetworkService, self).__init__(parent)
+        self.app = app
 
     def http(self, method, request, arg=None):
         ticket = str(uuid.uuid4())

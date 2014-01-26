@@ -48,7 +48,7 @@ class UserListModel(QAbstractListModel):
         self.app.network.get(request)
 
     def onNetworkRequestFinished(self, reply):
-        if reply.request().url().path() != "/users/":
+        if not reply.request().url().path().endswith("/users/"):
             return
 
         self.beginResetModel()
