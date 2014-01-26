@@ -1,6 +1,9 @@
 #!/usr/bin/php
 <?php
 
+// Internal request.
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
 // Get arguments.
 if (empty($argv[1]) || empty($argv[2])) {
     exit;
@@ -9,9 +12,9 @@ $username = $argv[1];
 $password = $argv[2];
 
 // Remove hostname suffix from username.
-$hostname = trim(system("hostname -d"));
+$hostname = trim(exec("hostname -d"));
 if (!$hostname) {
-    $hostname = trim(system("hostname"));
+    $hostname = trim(exec("hostname"));
 }
 $pattern = preg_quote('@' . $hostname);
 $username = preg_replace('/' . preg_quote('@' . $hostname) . '$/', '', $username);

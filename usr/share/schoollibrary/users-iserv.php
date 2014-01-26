@@ -1,9 +1,9 @@
 #!/usr/bin/php
 <?php
 
-$hostname = trim(system('hostname -d'));
+$hostname = trim(exec('hostname -d'));
 if (!$hostname) {
-    $hostname = trim(system('hostname'));
+    $hostname = trim(exec('hostname'));
 }
 
 ini_set("include_path", ".:/usr/share/iserv/www/inc:/usr/share/php");
