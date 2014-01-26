@@ -259,7 +259,6 @@ class BookTableModel(QAbstractTableModel):
         # Lending updated.
         match = self.lendingPathPattern.match(request.url().path())
         if match:
-            print match
             id = int(match.group(1))
             if not id in self.cache:
                 return
@@ -825,6 +824,14 @@ class LendingDialog(QDialog):
         self.returnLendingBox.setOpenExternalLinks(True)
         form.addRow("Geliehen von:", self.returnLendingBox)
 
+        row = QHBoxLayout()
+        row.addStretch(1)
+        self.returnButton = QPushButton(u"Zurücknehmen")
+        self.returnButton.setIcon(QIcon(self.app.data("basket-back.png")))
+        self.returnButton.clicked.connect(self.onReturnButton)
+        row.addWidget(self.returnButton)
+        form.addRow(row)
+
         widget = QWidget()
         widget.setLayout(form)
         return widget
@@ -845,6 +852,13 @@ class LendingDialog(QDialog):
         request = QNetworkRequest(self.app.login.getUrl(path))
         request.setHeader(QNetworkRequest.ContentTypeHeader, "application/x-www-form-urlencoded")
         self.ticket = self.app.network.http("POST", request, params.encodedQuery())
+        self.updateValues(True)
+
+    def onReturnButton(self):
+        path = "/books/%d/lending" % self.book.id
+        request = QNetworkRequest(self.app.login.getUrl(path))
+        request.setRawHeader(QByteArray("X-CSRF-Token"), QByteArray(self.app.login.csrf))
+        self.ticket = self.app.network.http("DELETE", request)
         self.updateValues(True)
 
     def closeEvent(self, event):
