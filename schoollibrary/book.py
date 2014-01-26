@@ -777,12 +777,8 @@ class LendingDialog(QDialog):
         self.lendLendableBox = QLabel()
         form.addRow("Ausleihbar:", self.lendLendableBox)
 
-        self.lendUserBoxCompleter = QCompleter(self)
-        self.lendUserBoxCompleter.setModel(self.app.users)
-        self.lendUserBoxCompleter.setCaseSensitivity(Qt.CaseInsensitive)
-        self.lendUserBoxCompleter.setCompletionMode(QCompleter.PopupCompletion)
-        self.lendUserBox = QLineEdit()
-        self.lendUserBox.setCompleter(self.lendUserBoxCompleter)
+        self.lendUserBox = QComboBox()
+        self.lendUserBox.setModel(self.app.users)
         form.addRow("Ausleihen an:", self.lendUserBox)
 
         row = QHBoxLayout()
@@ -843,7 +839,7 @@ class LendingDialog(QDialog):
         return self.busyIndicator
 
     def onLendButton(self):
-        user = self.lendUserBox.text().strip()
+        user = self.lendUserBox.currentText()
 
         params = QUrl()
         params.addQueryItem("_csrf", self.app.login.csrf)
