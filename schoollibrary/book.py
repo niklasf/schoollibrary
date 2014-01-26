@@ -701,6 +701,24 @@ class LendingDialog(QDialog):
             self.returnLocationBox.setText(self.book.location)
             self.returnSignatureBox.setText(self.book.signature)
 
+            today = datetime.date.today()
+            since = dateutil.parser.parse(self.book.lendingSince).date()
+            duration = (today - since).days
+            if duration == 0:
+                self.returnLendingBox.setText("%s seit heute" % self.book.lendingUser)
+            elif duration == 1:
+                self.returnLendingBox.setText("%s seit gestern" % self.book.lendingUser)
+            else:
+                self.returnLendingBox.setText("%s seit %d Tagen" % (self.book.lendingUser, duration))
+
+            palette = self.returnLendingBox.palette()
+            role = self.returnLendingBox.backgroundRole()
+            if duration > self.book.lendingDays:
+                palette.setColor(role, QColor(231, 76, 60))
+            else:
+                palette.setColor(role, QColor(46, 204, 113))
+            self.returnLendingBox.setPalette(palette)
+
     def initLendPage(self):
         form = QFormLayout()
 
@@ -771,6 +789,10 @@ class LendingDialog(QDialog):
 
         self.returnIsbnBox = QLabel()
         form.addRow("ISBN:", self.returnIsbnBox)
+
+        self.returnLendingBox = QLabel()
+        self.returnLendingBox.setAutoFillBackground(True)
+        form.addRow("Geliehen von:", self.returnLendingBox)
 
         widget = QWidget()
         widget.setLayout(form)
