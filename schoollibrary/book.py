@@ -23,6 +23,8 @@ from PySide.QtNetwork import *
 import json
 import uuid
 import re
+import datetime
+import dateutil.parser
 
 import indexed
 import util
@@ -157,10 +159,16 @@ class BookTableModel(QAbstractTableModel):
                 return font
         elif role == Qt.BackgroundRole:
             if book.lent:
-                # TODO: Highlight red if overdue.
-                return QColor(100, 200, 100)
+                if book.lendingUser:
+                    # Highlight red if overdue.
+                    today = datetime.date.today()
+                    since = dateutil.parser.parse(book.lendingSince).date()
+                    days = datetime.timedelta(days=book.lendingDays)
+                    if today - since > days:
+                        return QColor(231, 76, 60)
+                return QColor(46, 204, 113)
             elif not book.lendable:
-                return QColor(230, 230, 230)
+                return QColor(236, 240, 241)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
@@ -655,6 +663,7 @@ class LendingDialog(QDialog):
         # Create the stack of the different views and a busy indicator.
         self.layoutStack = QStackedLayout()
         self.layoutStack.addWidget(self.initLendPage())
+        self.layoutStack.addWidget(self.initReturnPage())
         self.layoutStack.addWidget(self.initBusyIndicator())
         self.setLayout(self.layoutStack)
 
@@ -667,17 +676,26 @@ class LendingDialog(QDialog):
 
     def updateValues(self, busy):
         if busy:
-            self.layoutStack.setCurrentIndex(1)
+            self.layoutStack.setCurrentIndex(2)
             self.busyIndicator.setEnabled(True)
         else:
             self.busyIndicator.setEnabled(False)
 
         if not self.book.lent:
+            self.layoutStack.setCurrentIndex(0)
             self.lendIdBox.setText(str(self.book.id))
             self.lendIsbnBox.setText(self.book.isbn)
             self.lendTitleBox.setText(self.book.title)
             self.lendAuthorsBox.setText(self.book.authors)
             self.lendLocationBox.setText(self.book.location)
+            self.lendLendableBox.setText("Ja" if self.book.lendable else "Nein")
+        else:
+            self.layoutStack.setCurrentIndex(1)
+            self.returnIdBox.setText(str(self.book.id))
+            self.returnIsbnBox.setText(self.book.isbn)
+            self.returnTitleBox.setText(self.book.title)
+            self.returnAuthorsBox.setText(self.book.authors)
+            self.returnLocationBox.setText(self.book.location)
 
     def initLendPage(self):
         form = QFormLayout()
@@ -700,6 +718,9 @@ class LendingDialog(QDialog):
         self.lendLocationBox = QLabel()
         form.addRow("Standort:", self.lendLocationBox)
 
+        self.lendLendableBox = QLabel()
+        form.addRow("Ausleihbar:", self.lendLendableBox)
+
         self.lendUserBoxCompleter = QCompleter(self)
         self.lendUserBoxCompleter.setModel(self.app.users)
         self.lendUserBoxCompleter.setCaseSensitivity(Qt.CaseInsensitive)
@@ -715,6 +736,31 @@ class LendingDialog(QDialog):
         self.lendButton.clicked.connect(self.onLendButton)
         row.addWidget(self.lendButton)
         form.addRow(row)
+
+        widget = QWidget()
+        widget.setLayout(form)
+        return widget
+
+    def initReturnPage(self):
+        form = QFormLayout()
+
+        self.returnIdBox = QLabel()
+        form.addRow("ID:", self.returnIdBox)
+
+        self.returnIsbnBox = QLabel()
+        form.addRow("ISBN:", self.returnIsbnBox)
+
+        self.returnTitleBox = QLabel()
+        font = self.returnTitleBox.font()
+        font.setBold(True)
+        self.returnTitleBox.setFont(font)
+        form.addRow("Title:", self.returnTitleBox)
+
+        self.returnAuthorsBox = QLabel()
+        form.addRow("Autoren:", self.returnAuthorsBox)
+
+        self.returnLocationBox = QLabel()
+        form.addRow("Standort:", self.returnLocationBox)
 
         widget = QWidget()
         widget.setLayout(form)
