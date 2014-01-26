@@ -705,11 +705,11 @@ class LendingDialog(QDialog):
             since = dateutil.parser.parse(self.book.lendingSince).date()
             duration = (today - since).days
             if duration == 0:
-                self.returnLendingBox.setText("%s seit heute" % self.book.lendingUser)
+                self.returnLendingBox.setText("<a href=\"mailto:%s\">%s</a> seit heute" % (self.book.lendingUser, self.book.lendingUser))
             elif duration == 1:
-                self.returnLendingBox.setText("%s seit gestern" % self.book.lendingUser)
+                self.returnLendingBox.setText("<a href=\"mailto:%s\">%s</a> seit gestern" % (self.book.lendingUser, self.book.lendingUser))
             else:
-                self.returnLendingBox.setText("%s seit %d Tagen" % (self.book.lendingUser, duration))
+                self.returnLendingBox.setText("<a href=\"mailto:%s\">%s</a> seit %d Tagen" % (self.book.lendingUser, self.book.lendingUser, duration))
 
             palette = self.returnLendingBox.palette()
             role = self.returnLendingBox.backgroundRole()
@@ -792,6 +792,7 @@ class LendingDialog(QDialog):
 
         self.returnLendingBox = QLabel()
         self.returnLendingBox.setAutoFillBackground(True)
+        self.returnLendingBox.setOpenExternalLinks(True)
         form.addRow("Geliehen von:", self.returnLendingBox)
 
         widget = QWidget()
