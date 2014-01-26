@@ -778,7 +778,10 @@ class LendingDialog(QDialog):
         form.addRow("Ausleihbar:", self.lendLendableBox)
 
         self.lendUserBox = QComboBox()
-        self.lendUserBox.setModel(self.app.users)
+        self.lendUserBox.addItems(self.app.users.cache)
+        self.lendUserBox.setEditable(True)
+        self.lendUserBox.setInsertPolicy(QComboBox.NoInsert)
+        self.lendUserBox.setCurrentIndex(-1)
         form.addRow("Ausleihen an:", self.lendUserBox)
 
         row = QHBoxLayout()
