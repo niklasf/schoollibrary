@@ -682,6 +682,7 @@ class LendingDialog(QDialog):
             self.busyIndicator.setEnabled(False)
 
         if not self.book.lent:
+            self.setWindowTitle("Buch ausleihen: %s" % self.book.title)
             self.layoutStack.setCurrentIndex(0)
             self.lendIdBox.setText(str(self.book.id))
             self.lendIsbnBox.setText(self.book.isbn)
@@ -689,22 +690,28 @@ class LendingDialog(QDialog):
             self.lendAuthorsBox.setText(self.book.authors)
             self.lendLocationBox.setText(self.book.location)
             self.lendLendableBox.setText("Ja" if self.book.lendable else "Nein")
+            self.lendSignatureBox.setText(self.book.signature)
         else:
+            self.setWindowTitle(u"Buch zurücknehmen: %s" % self.book.title)
             self.layoutStack.setCurrentIndex(1)
             self.returnIdBox.setText(str(self.book.id))
             self.returnIsbnBox.setText(self.book.isbn)
             self.returnTitleBox.setText(self.book.title)
             self.returnAuthorsBox.setText(self.book.authors)
             self.returnLocationBox.setText(self.book.location)
+            self.returnSignatureBox.setText(self.book.signature)
 
     def initLendPage(self):
         form = QFormLayout()
 
+        self.lendSignatureBox = QLabel()
+        form.addRow("Signatur:", self.lendSignatureBox)
+
         self.lendIdBox = QLabel()
         form.addRow("ID:", self.lendIdBox)
 
-        self.lendIsbnBox = QLabel()
-        form.addRow("ISBN:", self.lendIsbnBox)
+        self.lendLocationBox = QLabel()
+        form.addRow("Standort:", self.lendLocationBox)
 
         self.lendTitleBox = QLabel()
         font = self.lendTitleBox.font()
@@ -715,8 +722,8 @@ class LendingDialog(QDialog):
         self.lendAuthorsBox = QLabel()
         form.addRow("Autoren:", self.lendAuthorsBox)
 
-        self.lendLocationBox = QLabel()
-        form.addRow("Standort:", self.lendLocationBox)
+        self.lendIsbnBox = QLabel()
+        form.addRow("ISBN:", self.lendIsbnBox)
 
         self.lendLendableBox = QLabel()
         form.addRow("Ausleihbar:", self.lendLendableBox)
@@ -744,23 +751,26 @@ class LendingDialog(QDialog):
     def initReturnPage(self):
         form = QFormLayout()
 
+        self.returnSignatureBox = QLabel()
+        form.addRow("Signatur:", self.returnSignatureBox)
+
         self.returnIdBox = QLabel()
         form.addRow("ID:", self.returnIdBox)
 
-        self.returnIsbnBox = QLabel()
-        form.addRow("ISBN:", self.returnIsbnBox)
+        self.returnLocationBox = QLabel()
+        form.addRow("Standort:", self.returnLocationBox)
 
         self.returnTitleBox = QLabel()
         font = self.returnTitleBox.font()
         font.setBold(True)
         self.returnTitleBox.setFont(font)
-        form.addRow("Title:", self.returnTitleBox)
+        form.addRow("Titel:", self.returnTitleBox)
 
         self.returnAuthorsBox = QLabel()
         form.addRow("Autoren:", self.returnAuthorsBox)
 
-        self.returnLocationBox = QLabel()
-        form.addRow("Standort:", self.returnLocationBox)
+        self.returnIsbnBox = QLabel()
+        form.addRow("ISBN:", self.returnIsbnBox)
 
         widget = QWidget()
         widget.setLayout(form)
