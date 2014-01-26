@@ -860,10 +860,22 @@ class LendingDialog(QDialog):
         event.accept()
 
     def onNetworkRequestFinished(self, reply):
+        # Only handle requests concerning this dialog.
         request = reply.request()
         if request.attribute(network.Ticket) != self.ticket:
             return
 
+        # Update the user interface.
+        self.ticket = None
         self.updateValues(False)
 
-        self.ticket = None
+        # Check for network errors.
+        if reply.error() != QNetworkReply.NoError:
+            QMessageBox.warning(self, self.windowTitle(), reply.errorString())
+            return
+
+        # Check for HTTP errors.
+        status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        if not status in (200, 204):
+            QMessageBox.warning(self, self.windowTitle(), "HTTP Status Code: %d" % status)
+            return
