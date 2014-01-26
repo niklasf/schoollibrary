@@ -778,7 +778,7 @@ class LendingDialog(QDialog):
         form.addRow("Ausleihbar:", self.lendLendableBox)
 
         self.lendUserBox = QComboBox()
-        self.lendUserBox.addItems(self.app.users.cache)
+        self.lendUserBox.setModel(self.app.users)
         self.lendUserBox.setEditable(True)
         self.lendUserBox.setInsertPolicy(QComboBox.NoInsert)
         self.lendUserBox.setCurrentIndex(-1)

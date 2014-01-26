@@ -42,6 +42,8 @@ class UserListModel(QAbstractListModel):
 
         if role == Qt.DisplayRole:
             return user
+        elif role == Qt.EditRole:
+            return user
 
     def reload(self):
         request = QNetworkRequest(self.app.login.getUrl("/users/"))
