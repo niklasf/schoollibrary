@@ -98,6 +98,7 @@ class BookTableModel(QAbstractTableModel):
         self.cache = indexed.IndexedOrderedDict()
 
         self.bookPathPattern = re.compile(r"^\/books\/([0-9]+)\/$")
+        self.lendingPathPattern = re.compile(r"^\/books\/([0-9]+)\/lending$")
 
     def index(self, row, column, parent=QModelIndex()):
         if parent.isValid() or not self.hasIndex(row, column, parent):
@@ -206,6 +207,8 @@ class BookTableModel(QAbstractTableModel):
 
     def onNetworkRequestFinished(self, reply):
         request = reply.request()
+        status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+        method = request.attribute(network.HttpMethod)
 
         if request.url().path() == "/books/" and request.attribute(network.HttpMethod) == "POST":
             # Book created.
@@ -252,6 +255,31 @@ class BookTableModel(QAbstractTableModel):
                     self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
                     self.cache[book.id] = book
                     self.endInsertRows()
+
+        # Lending updated.
+        match = self.lendingPathPattern.match(request.url().path())
+        if match:
+            print match
+            id = int(match.group(1))
+            if not id in self.cache:
+                return
+
+            book = self.cache[id]
+
+            if method in ("POST", "PUT", "GET") and status == 200:
+                data = json.loads(str(reply.readAll()))
+                book.lent = True
+                book.lendingUser = data["user"]
+                book.lendingSince = data["since"]
+                book.lendingDays = int(data["days"])
+            elif (method == "GET" and status == 404) or (method == "DELETE" and status in (200, 204)):
+                book.lent = False
+                book.lendingUser = None
+                book.lendingSince = None
+                book.lendingDays = None
+
+            bookIndex = self.indexFromBook(book)
+            self.dataChanged.emit(bookIndex, self.index(bookIndex.row(), self.columnCount() - 1, QModelIndex()))
 
     def bookFromData(self, data):
         book = Book()
@@ -675,6 +703,8 @@ class LendingDialog(QDialog):
         self.ticket = None
 
     def updateValues(self, busy):
+        self.book = self.app.books.cache[self.book.id]
+
         if busy:
             self.layoutStack.setCurrentIndex(2)
             self.busyIndicator.setEnabled(True)
@@ -831,3 +861,9 @@ class LendingDialog(QDialog):
 
     def onNetworkRequestFinished(self, reply):
         request = reply.request()
+        if request.attribute(network.Ticket) != self.ticket:
+            return
+
+        self.updateValues(False)
+
+        self.ticket = None
