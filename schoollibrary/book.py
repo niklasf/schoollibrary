@@ -580,6 +580,7 @@ class BookDialog(QDialog):
 
         params = QUrl()
         params.addQueryItem("_csrf", self.app.login.csrf)
+        params.addQueryItem("etag", str(self.book.etag))
         params.addQueryItem("isbn", isbn)
         params.addQueryItem("title", title)
         params.addQueryItem("authors", self.authorsBox.text())
@@ -852,6 +853,7 @@ class LendingDialog(QDialog):
         params.addQueryItem("_csrf", self.app.login.csrf)
         params.addQueryItem("user", user)
         params.addQueryItem("days", str(14))
+        params.addQueryItem("etag", str(self.book.etag))
 
         path = "/books/%d/lending" % self.book.id
         request = QNetworkRequest(self.app.login.getUrl(path))
