@@ -435,6 +435,11 @@ class LoginDialog(QDialog):
             self.app.settings.setValue("ApiUserName", self.userNameBox.text())
             self.accept()
 
+    def sizeHint(self):
+        """Make dialog a little wider than strictly nescessary."""
+        size = super(LoginDialog, self).sizeHint()
+        return QSize(size.width() + 150, size.height())
+
 if __name__ == "__main__":
     app = Application(sys.argv)
     sys.exit(app.exec_())
