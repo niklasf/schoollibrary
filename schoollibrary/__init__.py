@@ -121,7 +121,11 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.setSortingEnabled(True)
         self.addTab(u"Ausgeliehene Bücher", self.lentBooksTable)
 
-        return self.tabs
+        layout = QHBoxLayout()
+        layout.addWidget(self.tabs)
+        widget = QWidget()
+        widget.setLayout(layout)
+        return widget
 
     def initBusyIndicator(self):
         self.busyIndicator = busyindicator.BusyIndicator()
