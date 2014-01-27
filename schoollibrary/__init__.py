@@ -432,6 +432,7 @@ class LoginDialog(QDialog):
         # Finish dialog.
         if self.isVisible():
             self.app.settings.setValue("ApiUrl", self.urlBox.text())
+            self.app.settings.setValue("ApiUserName", self.userNameBox.text())
             self.accept()
 
 if __name__ == "__main__":
