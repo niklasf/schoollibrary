@@ -307,7 +307,7 @@ app.put('/books/:id/', function (req, res) {
             return res.send(403);
         }
 
-        if (req.body.etag && req.body.etag !== book.etag) {
+        if (req.body.etag && req.body.etag != book.etag) {
             return res.send(409);
         }
 
@@ -394,7 +394,7 @@ app.post('/books/:id/lending', function (req, res) {
             return res.send(403);
         }
 
-        if (req.body.etag && req.body.etag !== book.etag) {
+        if (req.body.etag && req.body.etag != book.etag) {
             return res.send(409);
         }
 
