@@ -70,6 +70,7 @@ class Book(object):
 
     def __init__(self):
         self.id = 0
+        self.etag = 0
         self.signature = ""
         self.location = ""
         self.title = ""
@@ -270,11 +271,13 @@ class BookTableModel(QAbstractTableModel):
             if method in ("POST", "PUT", "GET") and status == 200:
                 data = json.loads(str(reply.readAll()))
                 book.lent = True
+                book.etag = int(reply.rawHeader(QByteArray("ETag")))
                 book.lendingUser = data["user"]
                 book.lendingSince = data["since"]
                 book.lendingDays = int(data["days"])
             elif (method == "GET" and status == 404) or (method == "DELETE" and status in (200, 204)):
                 book.lent = False
+                book.etag = int(reply.rawHeader(QByteArray("ETag")))
                 book.lendingUser = None
                 book.lendingSince = None
                 book.lendingDays = None
@@ -286,6 +289,7 @@ class BookTableModel(QAbstractTableModel):
         book = Book()
 
         book.id = int(data["_id"])
+        book.etag = data["etag"]
         book.isbn = data["isbn"]
         book.title = data["title"]
         book.authors = data["authors"]
