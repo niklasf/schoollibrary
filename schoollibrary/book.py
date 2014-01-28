@@ -288,7 +288,7 @@ class BookTableModel(QAbstractTableModel):
                     self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
                     self.cache[book.id] = book
                     self.endInsertRows()
-            elif (method == "GET" and status == 404) or (method == "DELETE" and status in (200, 204)):
+            elif (method in ("GET", "PUT") and status == 404) or (method == "DELETE" and status in (200, 204)):
                 if id in self.cache:
                     row = self.cache.keys.index(id)
                     self.beginRemoveRows(QModelIndex(), row, row)
