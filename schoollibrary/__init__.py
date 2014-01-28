@@ -104,6 +104,14 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.horizontalHeader().setMovable(True)
         self.lentBooksTable.horizontalHeader().restoreState(self.app.settings.value("LentBooksTableState"))
 
+        # Restore tab visibilities.
+        settingsKeys = ["AllBooksTabHidden", "LendBooksTabHidden"]
+        for actionIndex, settingsKey in enumerate(settingsKeys):
+            if not self.app.settings.value(settingsKey, "false") == "true":
+                action = self.tabVisibilityActions.actions()[actionIndex]
+                action.setChecked(True)
+                self.onTabVisibilityAction(action)
+
         # Restore column visibilities.
         for action in self.columnVisibilityActions.actions():
             settingsKey = "BookTableColumn%dHidden" % action.data()
@@ -119,6 +127,8 @@ class MainWindow(QMainWindow):
     def initTabs(self):
         """Initializes the main tabs."""
         self.tabs = QTabWidget()
+        self.tabs.setTabsClosable(True)
+        self.tabs.tabCloseRequested.connect(self.onTabCloseRequested)
 
         self.allBooksTable = QTableView()
         self.allBooksTable.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -126,7 +136,7 @@ class MainWindow(QMainWindow):
         self.allBooksTable.customContextMenuRequested.connect(self.onAllBooksCustomContextMenuRequested)
         self.allBooksTable.setModel(self.app.books.getProxy())
         self.allBooksTable.setSortingEnabled(True)
-        self.addTab(u"Alle Bücher", self.allBooksTable)
+        self.allBooksTab = self.wrapWidget(self.allBooksTable)
 
         self.lentBooksTable = QTableView()
         self.lentBooksTable.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -134,22 +144,18 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.customContextMenuRequested.connect(self.onLentBooksCustomContextMenuRequested)
         self.lentBooksTable.setModel(self.app.books.getLentProxy())
         self.lentBooksTable.setSortingEnabled(True)
-        self.addTab(u"Ausgeliehene Bücher", self.lentBooksTable)
+        self.lentBooksTab = self.wrapWidget(self.lentBooksTable)
 
+        return self.wrapWidget(self.tabs)
+
+    def wrapWidget(self, widget):
+        """Adds another widget as a border around the given widget."""
         layout = QHBoxLayout()
-        layout.addWidget(self.tabs)
-        widget = QWidget()
-        widget.setLayout(layout)
-        return widget
-
-    def addTab(self, title, widget):
-        """Creates a tab in the main tab widget."""
-        page = QWidget()
-        layout = QHBoxLayout()
-
-        page.setLayout(layout)
         layout.addWidget(widget)
-        return self.tabs.addTab(page, title)
+
+        container = QWidget()
+        container.setLayout(layout)
+        return container
 
     def initBusyIndicator(self):
         """Creates a busy indicator."""
@@ -205,6 +211,14 @@ class MainWindow(QMainWindow):
         self.deleteBookAction.triggered.connect(self.onDeleteBookAction)
         self.deleteBookAction.setEnabled(self.app.login.libraryDelete)
 
+        self.tabVisibilityActions = QActionGroup(self)
+        self.tabVisibilityActions.triggered.connect(self.onTabVisibilityAction)
+        self.tabVisibilityActions.setExclusive(False)
+        self.tabVisibilityActions.addAction(u"Alle Bücher").setData(0)
+        self.tabVisibilityActions.addAction(u"Ausgeliehene Bücher").setData(1)
+        for action in self.tabVisibilityActions.actions():
+            action.setCheckable(True)
+
         self.columnVisibilityActions = QActionGroup(self)
         self.columnVisibilityActions.triggered.connect(self.onColumnVisibilityAction)
         self.columnVisibilityActions.setExclusive(False)
@@ -259,6 +273,8 @@ class MainWindow(QMainWindow):
 
         viewMenu = self.menuBar().addMenu("Ansicht")
         viewMenu.addAction(self.toolBar.toggleViewAction())
+        viewMenu.addSeparator()
+        viewMenu.addActions(self.tabVisibilityActions.actions())
         viewMenu.addSeparator()
         viewMenu.addActions(self.columnVisibilityActions.actions())
 
@@ -343,6 +359,42 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.horizontalHeader().setSectionHidden(action.data(), hidden)
         settingsKey = "BookTableColumn%dHidden" % action.data()
         self.app.settings.setValue(settingsKey, "true" if hidden else "false")
+
+    def onTabVisibilityAction(self, action):
+        titles = [u"Alle Bücher", u"Ausgeliehene Bücher"]
+        widgets = [self.allBooksTab, self.lentBooksTab]
+        settingsKeys = ["AllBooksTabHidden", "LendBooksTabHidden"]
+
+        if not action.isChecked():
+            self.app.settings.setValue(settingsKeys[action.data()], "true")
+
+            for index in range(0, self.tabs.count()):
+                if self.tabs.widget(index) == widgets[action.data()]:
+                    self.tabs.removeTab(index)
+                    return
+        else:
+            self.app.settings.setValue(settingsKeys[action.data()], "false")
+
+            for index in range(0, self.tabs.count()):
+                if self.tabs.widget(index) == widgets[action.data()]:
+                    return
+
+                if self.tabs.widget(index) in widgets[action.data():]:
+                    self.tabs.insertTab(index, widgets[action.data()], titles[action.data()])
+                    return
+
+            self.tabs.addTab(widgets[action.data()], titles[action.data()])
+
+
+    def onTabCloseRequested(self, tabIndex):
+        widgets = [self.allBooksTab, self.lentBooksTab]
+
+        for actionIndex, widget in enumerate(widgets):
+            if widget == self.tabs.widget(tabIndex):
+                action = self.tabVisibilityActions.actions()[actionIndex]
+                action.setChecked(False)
+                self.onTabVisibilityAction(action)
+                break
 
     def onNetworkRequestFinished(self, reply):
         """Called when a network request is finished."""
