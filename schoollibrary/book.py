@@ -154,6 +154,16 @@ class BookTableModel(QAbstractTableModel):
                 return "Ja" if book.lendable else "Nein"
             elif index.column() == 15:
                 if book.lent:
+                    if book.lendingUser:
+                        today = datetime.date.today()
+                        since = dateutil.parser.parse(book.lendingSince).date()
+                        duration = (today - since).days
+                        if duration == 0:
+                            return "%s seit heute" % (book.lendingUser)
+                        elif duration == 1:
+                            return "%s seit gestern" % (book.lendingUser)
+                        else:
+                            return "%s seit %d Tagen" % (book.lendingUser, duration)
                     return "Ja"
         elif role == Qt.UserRole:
             if index.column() == 14:
