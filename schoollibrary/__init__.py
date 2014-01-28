@@ -421,6 +421,7 @@ class LoginDialog(QDialog):
         self.app.network.finished.connect(self.onNetworkRequestFinished)
 
         self.setWindowTitle("Schulbibliothek Login")
+        self.setWindowIcon(QIcon(self.app.data("schoollibrary.ico")))
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
 
         self.layoutStack = QStackedLayout()
