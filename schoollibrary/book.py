@@ -434,6 +434,8 @@ class BookDialog(QDialog):
         self.app = app
         self.book = book
 
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+
         # Create a stack of the form and a busy indicator.
         self.layoutStack = QStackedLayout()
         self.layoutStack.addWidget(self.initForm())
@@ -733,6 +735,8 @@ class LendingDialog(QDialog):
         super(LendingDialog, self).__init__(parent)
         self.app = app
         self.book = book
+
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
 
         # Create the stack of the different views and a busy indicator.
         self.layoutStack = QStackedLayout()
