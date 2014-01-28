@@ -210,7 +210,7 @@ class BookTableModel(QAbstractTableModel):
                 elif section == 9:
                     return "Verlag"
                 elif section == 10:
-                    return "Veröffentlichungsort"
+                    return u"Veröffentlichungsort"
                 elif section == 11:
                     return "Jahr"
                 elif section == 12:
