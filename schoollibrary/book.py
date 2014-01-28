@@ -123,46 +123,55 @@ class BookTableModel(QAbstractTableModel):
 
         if role == Qt.DisplayRole:
             if index.column() == 0:
-                lines = []
-                if book.signature:
-                    lines.append(book.signature)
-                lines.append(str(book.id))
-                if book.location:
-                    lines.append(book.location)
-                return "\n".join(lines)
-            elif index.column() == 1:
-                return book.title
-            elif index.column() == 2:
-                return book.topic
-            elif index.column() == 3:
-                return book.volume
-            elif index.column() == 4:
-                return book.publisher
-            elif index.column() == 5:
-                return book.placeOfPublication
-            elif index.column() == 6:
-                return book.year
-            elif index.column() == 7:
-                return book.keywords
-            elif index.column() == 8:
-                return book.isbn
-            elif index.column() == 9:
-                return book.edition
-        elif role == Qt.UserRole:
-            if index.column() == 0:
                 return book.id
+            elif index.column() == 1:
+                return book.etag
+            elif index.column() == 2:
+                return book.signature
+            elif index.column() == 3:
+                return book.location
+            elif index.column() == 4:
+                return book.title
+            elif index.column() == 5:
+                return book.authors
+            elif index.column() == 6:
+                return book.topic
+            elif index.column() == 7:
+                return book.volume
+            elif index.column() == 8:
+                return book.keywords
+            elif index.column() == 9:
+                return book.publisher
+            elif index.column() == 10:
+                return book.placeOfPublication
+            elif index.column() == 11:
+                return book.year
+            elif index.column() == 12:
+                return book.isbn
+            elif index.column() == 13:
+                return book.edition
+            elif index.column() == 14:
+                return "Ja" if book.lendable else "Nein"
+            elif index.column() == 15:
+                if book.lent:
+                    return "Ja"
+        elif role == Qt.UserRole:
+            if index.column() == 14:
+                return 1 if book.lendable else 0
+            elif index.column() == 15:
+                if book.lendingUser:
+                    return book.lendingUser
+                else:
+                    return book.lent
             else:
                 return index.data(Qt.DisplayRole)
-        elif role == util.TitleAndDescriptionDelegate.DescriptionRole:
-            if index.column() == 1:
-                return book.authors
         elif role == Qt.TextAlignmentRole:
-            if index.column() in (0, 3, 6, 8):
+            if index.column() in (0, 1, 2, 11, 12, 14):
                 return Qt.AlignCenter
         elif role == Qt.FontRole:
-            if index.column() == 0:
+            if index.column() == 4:
                 font = QFont()
-                font.setPointSizeF(font.pointSize() * 0.8)
+                font.setBold(True)
                 return font
         elif role == Qt.BackgroundRole:
             if book.lent:
@@ -181,25 +190,37 @@ class BookTableModel(QAbstractTableModel):
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
                 if section == 0:
-                    return "Label"
+                    return "ID"
                 if section == 1:
-                    return "Buch"
+                    return "ETag"
                 elif section == 2:
-                    return "Thema"
+                    return "Signatur"
                 elif section == 3:
-                    return "Band"
+                    return "Standort"
                 elif section == 4:
-                    return "Verlag"
+                    return "Titel"
                 elif section == 5:
-                    return "Erscheinungsort"
+                    return "Autoren"
                 elif section == 6:
-                    return "Jahr"
+                    return "Thema"
                 elif section == 7:
-                    return u"Schlüsselwörter"
+                    return "Band"
                 elif section == 8:
-                    return "ISBN"
+                    return u"Schlüsselwörter"
                 elif section == 9:
-                    return "Auflage"
+                    return "Verlag"
+                elif section == 10:
+                    return "Veröffentlichungsort"
+                elif section == 11:
+                    return "Jahr"
+                elif section == 12:
+                    return "ISBN"
+                elif section == 13:
+                    return "Ausgabe"
+                elif section == 14:
+                    return "Ausleihbar"
+                elif section == 15:
+                    return "Ausgeliehen"
 
     def reload(self):
         request = QNetworkRequest(self.app.login.getUrl("/books/"))

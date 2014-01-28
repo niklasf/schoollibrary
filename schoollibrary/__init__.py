@@ -104,6 +104,14 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.horizontalHeader().setMovable(True)
         self.lentBooksTable.horizontalHeader().restoreState(self.app.settings.value("LentBooksTableState"))
 
+        # Restore column visibilities.
+        for action in self.columnVisibilityActions.actions():
+            settingsKey = "BookTableColumn%dHidden" % action.data()
+            default = "false" if action.data() in (0, 2, 4, 5, 15) else "true"
+            hidden = self.app.settings.value(settingsKey, default) == "true"
+            action.setChecked(not hidden)
+            self.onColumnVisibilityAction(action)
+
         # Load data.
         self.ticket = None
         self.onRefreshAction()
@@ -117,8 +125,6 @@ class MainWindow(QMainWindow):
         self.allBooksTable.setContextMenuPolicy(Qt.CustomContextMenu)
         self.allBooksTable.customContextMenuRequested.connect(self.onAllBooksCustomContextMenuRequested)
         self.allBooksTable.setModel(self.app.books.getProxy())
-        self.allBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
-        self.allBooksTable.setItemDelegateForColumn(1, self.allBooksTable.titleAndDescriptionDelegate)
         self.allBooksTable.setSortingEnabled(True)
         self.addTab(u"Alle Bücher", self.allBooksTable)
 
@@ -127,8 +133,6 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.setContextMenuPolicy(Qt.CustomContextMenu)
         self.lentBooksTable.customContextMenuRequested.connect(self.onLentBooksCustomContextMenuRequested)
         self.lentBooksTable.setModel(self.app.books.getLentProxy())
-        self.lentBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
-        self.lentBooksTable.setItemDelegateForColumn(1, self.lentBooksTable.titleAndDescriptionDelegate)
         self.lentBooksTable.setSortingEnabled(True)
         self.addTab(u"Ausgeliehene Bücher", self.lentBooksTable)
 
@@ -201,6 +205,28 @@ class MainWindow(QMainWindow):
         self.deleteBookAction.triggered.connect(self.onDeleteBookAction)
         self.deleteBookAction.setEnabled(self.app.login.libraryDelete)
 
+        self.columnVisibilityActions = QActionGroup(self)
+        self.columnVisibilityActions.triggered.connect(self.onColumnVisibilityAction)
+        self.columnVisibilityActions.setExclusive(False)
+        self.columnVisibilityActions.addAction("ID").setData(0)
+        self.columnVisibilityActions.addAction("ETag").setData(1)
+        self.columnVisibilityActions.addAction("Signatur").setData(2)
+        self.columnVisibilityActions.addAction("Standort").setData(3)
+        self.columnVisibilityActions.addAction("Titel").setData(4)
+        self.columnVisibilityActions.addAction("Autoren").setData(5)
+        self.columnVisibilityActions.addAction("Thema").setData(6)
+        self.columnVisibilityActions.addAction("Band").setData(7)
+        self.columnVisibilityActions.addAction(u"Schlüsselwörter").setData(8)
+        self.columnVisibilityActions.addAction("Verlag").setData(9)
+        self.columnVisibilityActions.addAction(u"Veröffentlichungsort").setData(10)
+        self.columnVisibilityActions.addAction("Jahr").setData(11)
+        self.columnVisibilityActions.addAction("ISBN").setData(12)
+        self.columnVisibilityActions.addAction("Ausgabe").setData(13)
+        self.columnVisibilityActions.addAction("Ausleihbar").setData(14)
+        self.columnVisibilityActions.addAction("Ausgeliehen").setData(15)
+        for action in self.columnVisibilityActions.actions():
+            action.setCheckable(True)
+
     def initToolBar(self):
         """Creates the toolbar."""
         self.toolBar = self.addToolBar("Test")
@@ -231,8 +257,10 @@ class MainWindow(QMainWindow):
         bookMenu.addAction(self.editBookAction)
         bookMenu.addAction(self.deleteBookAction)
 
-        self.viewMenu = self.menuBar().addMenu("Ansicht")
-        self.viewMenu.addAction(self.toolBar.toggleViewAction())
+        viewMenu = self.menuBar().addMenu("Ansicht")
+        viewMenu.addAction(self.toolBar.toggleViewAction())
+        viewMenu.addSeparator()
+        viewMenu.addActions(self.columnVisibilityActions.actions())
 
         self.contextMenu = QMenu()
         self.contextMenu.addAction(self.lendingAction)
@@ -307,6 +335,14 @@ class MainWindow(QMainWindow):
         """Opens the context menu for lent books."""
         if self.selectedBooks():
             self.contextMenu.exec_(self.lentBooksTable.viewport().mapToGlobal(position))
+
+    def onColumnVisibilityAction(self, action):
+        """Handles the column visibility actions."""
+        hidden = not action.isChecked()
+        self.allBooksTable.horizontalHeader().setSectionHidden(action.data(), hidden)
+        self.lentBooksTable.horizontalHeader().setSectionHidden(action.data(), hidden)
+        settingsKey = "BookTableColumn%dHidden" % action.data()
+        self.app.settings.setValue(settingsKey, "true" if hidden else "false")
 
     def onNetworkRequestFinished(self, reply):
         """Called when a network request is finished."""
