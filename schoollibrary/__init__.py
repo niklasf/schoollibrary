@@ -99,6 +99,10 @@ class MainWindow(QMainWindow):
         # Restore geometry.
         self.restoreGeometry(self.app.settings.value("MainWindowGeometry"))
         self.restoreState(self.app.settings.value("MainWindowState"))
+        self.allBooksTable.horizontalHeader().setMovable(True)
+        self.allBooksTable.horizontalHeader().restoreState(self.app.settings.value("AllBooksTableState"))
+        self.lentBooksTable.horizontalHeader().setMovable(True)
+        self.lentBooksTable.horizontalHeader().restoreState(self.app.settings.value("LentBooksTableState"))
 
         # Load data.
         self.ticket = None
@@ -115,7 +119,6 @@ class MainWindow(QMainWindow):
         self.allBooksTable.setModel(self.app.books.getProxy())
         self.allBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
         self.allBooksTable.setItemDelegateForColumn(1, self.allBooksTable.titleAndDescriptionDelegate)
-        self.allBooksTable.model().modelReset.connect(self.onAllBooksReset)
         self.allBooksTable.setSortingEnabled(True)
         self.addTab(u"Alle Bücher", self.allBooksTable)
 
@@ -126,7 +129,6 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.setModel(self.app.books.getLentProxy())
         self.lentBooksTable.titleAndDescriptionDelegate = util.TitleAndDescriptionDelegate()
         self.lentBooksTable.setItemDelegateForColumn(1, self.lentBooksTable.titleAndDescriptionDelegate)
-        self.lentBooksTable.model().modelReset.connect(self.onLentBooksReset)
         self.lentBooksTable.setSortingEnabled(True)
         self.addTab(u"Ausgeliehene Bücher", self.lentBooksTable)
 
@@ -158,18 +160,6 @@ class MainWindow(QMainWindow):
         else:
             self.layoutStack.setCurrentIndex(0)
             self.busyIndicator.setEnabled(False)
-
-    def onAllBooksReset(self):
-        """Resizes items in the all-books-table when the model is reset."""
-        self.allBooksTable.resizeColumnsToContents()
-        self.allBooksTable.setColumnWidth(1, 400)
-        self.allBooksTable.resizeRowsToContents()
-
-    def onLentBooksReset(self):
-        """Resizes items in the lend-books-table when the model is reset."""
-        self.lentBooksTable.resizeColumnsToContents()
-        self.lentBooksTable.setColumnWidth(1, 400)
-        self.lentBooksTable.resizeRowsToContents()
 
     def initActions(self):
         """Creates actions."""
@@ -328,6 +318,8 @@ class MainWindow(QMainWindow):
         """Saves the geometry when the window is closed."""
         self.app.settings.setValue("MainWindowGeometry", self.saveGeometry())
         self.app.settings.setValue("MainWindowState", self.saveState())
+        self.app.settings.setValue("AllBooksTableState", self.allBooksTable.horizontalHeader().saveState())
+        self.app.settings.setValue("LentBooksTableState", self.lentBooksTable.horizontalHeader().saveState())
         return super(MainWindow, self).closeEvent(event)
 
 
