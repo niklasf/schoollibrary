@@ -432,6 +432,13 @@ class LoginDialog(QDialog):
             self.busyIndicator.setEnabled(False)
             self.layoutStack.setCurrentIndex(0)
 
+        # Check for an authentication error.
+        if reply.error() == QNetworkReply.AuthenticationRequiredError:
+            self.passwordBox.setText("")
+            self.passwordBox.setFocus()
+            QMessageBox.warning(self, self.windowTitle(), "Login fehlgeschlagen.")
+            return
+
         # Check for network errors.
         if reply.error() != QNetworkReply.NoError:
             QMessageBox.warning(self, self.windowTitle(), self.censorError(reply.errorString()))
