@@ -116,7 +116,7 @@ class BookTableModel(QAbstractTableModel):
         return len(self.cache)
 
     def columnCount(self, parent=QModelIndex()):
-        return 10
+        return 16
 
     def data(self, index, role=Qt.DisplayRole):
         book = index.internalPointer()
