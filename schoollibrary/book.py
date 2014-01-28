@@ -310,7 +310,7 @@ class BookTableModel(QAbstractTableModel):
         book.lendable = bool(data["lendable"])
         book.lent = bool(data["lent"])
 
-        if book.lent:
+        if book.lent and "lending" in data:
             book.lendingUser = data["lending"]["user"]
             book.lendingSince = data["lending"]["since"]
             book.lendingDays = data["lending"]["days"]

@@ -194,17 +194,21 @@ class MainWindow(QMainWindow):
         self.addBookAction.setShortcut("Ctrl+N")
         self.addBookAction.setIcon(QIcon(self.app.data("add-book.png")))
         self.addBookAction.triggered.connect(self.onAddBookAction)
+        self.addBookAction.setEnabled(self.app.login.libraryModify)
 
         self.lendingAction = QAction(u"Ausleihe", self)
         self.lendingAction.setIcon(QIcon(self.app.data("basket.png")))
         self.lendingAction.triggered.connect(self.onLendingAction)
+        self.lendingAction.setEnabled(self.app.login.libraryLend)
 
         self.editBookAction = QAction("Buch bearbeiten", self)
         self.editBookAction.triggered.connect(self.onEditBookAction)
+        self.editBookAction.setEnabled(self.app.login.libraryModify)
 
         self.deleteBookAction = QAction(u"Buch löschen", self)
         self.deleteBookAction.setShortcut("Del")
         self.deleteBookAction.triggered.connect(self.onDeleteBookAction)
+        self.deleteBookAction.setEnabled(self.app.login.libraryDelete)
 
     def initMenu(self):
         """Creates the main menu."""
@@ -455,6 +459,10 @@ class LoginDialog(QDialog):
             user = json.loads(unicode(reply.readAll()))
             self.csrf = user["_csrf"]
             self.groups = user["groups"]
+            self.libraryAdmin = "library_admin" in self.groups
+            self.libraryModify = self.libraryAdmin or "library_modify" in self.groups
+            self.libraryDelete = self.libraryAdmin or "library_delete" in self.groups
+            self.libraryLend = self.libraryAdmin or "library_lend" in self.groups
         except:
             QMessageBox.warning(self, self.windowTitle(), "Host scheint keine Bibliothek zu sein.")
             return
