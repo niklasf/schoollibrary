@@ -334,7 +334,12 @@ class LoginDialog(QDialog):
 
         self.passwordBox = QLineEdit()
         self.passwordBox.setEchoMode(QLineEdit.Password)
+        self.passwordBox.setText(self.app.settings.value("ApiPassword", ""))
         form.addRow("Passwort:", self.passwordBox)
+
+        self.savePasswordBox = QCheckBox("Passwort speichern")
+        self.savePasswordBox.setChecked(self.app.settings.value("ApiPassword", "") != "")
+        form.addRow(self.savePasswordBox)
 
         self.buttons = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         self.buttons.button(QDialogButtonBox.Ok).setAutoDefault(True)
@@ -433,6 +438,10 @@ class LoginDialog(QDialog):
         if self.isVisible():
             self.app.settings.setValue("ApiUrl", self.urlBox.text())
             self.app.settings.setValue("ApiUserName", self.userNameBox.text())
+            if self.savePasswordBox.isChecked():
+                self.app.settings.setValue("ApiPassword", self.passwordBox.text())
+            else:
+                self.app.settings.setValue("ApiPassword", "")
             self.accept()
 
     def sizeHint(self):
