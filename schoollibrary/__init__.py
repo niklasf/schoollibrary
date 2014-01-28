@@ -82,6 +82,7 @@ class MainWindow(QMainWindow):
         self.app.network.finished.connect(self.onNetworkRequestFinished)
 
         self.setWindowTitle("Schulbibliothek")
+        self.setWindowIcon(QIcon(self.app.data("schoollibrary.ico")))
 
         # Create the user interface.
         self.layoutStack = QStackedLayout()
