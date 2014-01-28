@@ -736,6 +736,7 @@ class LendingDialog(QDialog):
         self.app = app
         self.book = book
 
+        self.setWindowIcon(QIcon(self.app.data("basket.png")))
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
 
         # Create the stack of the different views and a busy indicator.
