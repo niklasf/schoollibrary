@@ -93,8 +93,8 @@ class MainWindow(QMainWindow):
 
         # Initialize menu and toolbar actions.
         self.initActions()
-        self.initMenu()
         self.initToolBar()
+        self.initMenu()
 
         # Restore geometry.
         self.restoreGeometry(self.app.settings.value("MainWindowGeometry"))
@@ -211,6 +211,18 @@ class MainWindow(QMainWindow):
         self.deleteBookAction.triggered.connect(self.onDeleteBookAction)
         self.deleteBookAction.setEnabled(self.app.login.libraryDelete)
 
+    def initToolBar(self):
+        """Creates the toolbar."""
+        self.toolBar = self.addToolBar("Test")
+        self.toolBar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.toolBar.setObjectName("MainWindowToolBar")
+        self.toolBar.setWindowTitle("Toolbar")
+
+        self.toolBar.addAction(self.lendingAction)
+        self.toolBar.addAction(self.addBookAction)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.refreshAction)
+
     def initMenu(self):
         """Creates the main menu."""
         mainMenu = self.menuBar().addMenu("Bibliothek")
@@ -229,22 +241,14 @@ class MainWindow(QMainWindow):
         bookMenu.addAction(self.editBookAction)
         bookMenu.addAction(self.deleteBookAction)
 
+        self.viewMenu = self.menuBar().addMenu("Ansicht")
+        self.viewMenu.addAction(self.toolBar.toggleViewAction())
+
         self.contextMenu = QMenu()
         self.contextMenu.addAction(self.lendingAction)
         self.contextMenu.addSeparator()
         self.contextMenu.addAction(self.editBookAction)
         self.contextMenu.addAction(self.deleteBookAction)
-
-    def initToolBar(self):
-        """Creates the toolbar."""
-        toolBar = self.addToolBar("Test")
-        toolBar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        toolBar.setObjectName("MainWindowToolBar")
-
-        toolBar.addAction(self.lendingAction)
-        toolBar.addAction(self.addBookAction)
-        toolBar.addSeparator()
-        toolBar.addAction(self.refreshAction)
 
     def onRefreshAction(self):
         """Handles the refresh action."""
