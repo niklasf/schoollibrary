@@ -16,8 +16,10 @@
 # You should have receicved a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 from PySide.QtCore import *
 from PySide.QtGui import *
+
 
 class Document(object):
     """A rendering context."""
@@ -47,6 +49,7 @@ class Document(object):
         """Creates a document with the properties of a printer."""
         return cls(QApplication.font(), printer.width(), printer.height())
 
+
 class Spacer(object):
     """Placeholder object. Nothing is rendered."""
 
@@ -62,6 +65,7 @@ class Spacer(object):
 
     def render(self, painter, size):
         pass
+
 
 class BorderedBox(object):
     """A box with a child, margins, borders and background color."""
@@ -123,6 +127,7 @@ class BorderedBox(object):
             self.child.render(painter, childSize)
             painter.restore()
 
+
 class TextBox(object):
     """A box with aligned text and a fixed width."""
 
@@ -162,6 +167,7 @@ class TextBox(object):
         painter.setFont(oldFont)
         painter.setPen(oldPen)
 
+
 class IndentedText(object):
     """A box with indented text and a fixed width."""
 
@@ -198,6 +204,7 @@ class IndentedText(object):
         painter.drawText(QRect(QPoint(self.indentation, 0), QSize(size.width() - self.indentation, size.height())), self.text, option)
         painter.setFont(oldFont)
 
+
 class HorizontalLayout(object):
     """Aligns its children horizontally."""
 
@@ -222,6 +229,7 @@ class HorizontalLayout(object):
             child.render(painter, QSize(child.width(), size.height()))
             painter.translate(child.width(), 0)
         painter.restore()
+
 
 class VerticalLayout(object):
     """Aligns its children vertically."""

@@ -16,15 +16,19 @@
 # You should have receicved a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 from PySide.QtCore import *
 from PySide.QtNetwork import *
 
 import uuid
 
+
 Ticket = QNetworkRequest.Attribute(QNetworkRequest.User)
 HttpMethod = QNetworkRequest.Attribute(QNetworkRequest.User + 1)
 
+
 class NetworkService(QNetworkAccessManager):
+
     def __init__(self, app, parent=None):
         super(NetworkService, self).__init__(parent)
         self.app = app

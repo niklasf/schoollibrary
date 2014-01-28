@@ -16,12 +16,14 @@
 # You should have receicved a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 __author__ = "Niklas Fiekas"
 __copyright__ = "Copyright 2013, Niklas Fiekas"
 __license__ = "GPL3+"
 __version__ = "0.0.1"
 __email__ = "niklas.fiekas@tu-clausthal.de"
 __status__ = "Development"
+
 
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -38,6 +40,7 @@ import busyindicator
 import network
 import os
 
+
 class Application(QApplication):
     """The main application class of the schoollibrary client."""
 
@@ -51,13 +54,15 @@ class Application(QApplication):
         self.users = user.UserListModel(self)
         self.books = book.BookTableModel(self)
 
-    def data(self, path):
+    def data(self, path=""):
+        """Gets the path to the data directory."""
         if os.path.exists("usr/share/schoollibrary"):
             return "usr/share/schoollibrary/" + path
         else:
             return "/usr/share/schoollibrary/" + path
 
     def exec_(self):
+        """Runs the application."""
         # Login.
         if not self.login.exec_():
             return 0
@@ -67,17 +72,18 @@ class Application(QApplication):
         mainWindow.show()
         return super(Application, self).exec_()
 
+
 class MainWindow(QMainWindow):
     """The main window."""
 
     def __init__(self, app):
         super(MainWindow, self).__init__()
         self.app = app
+        self.app.network.finished.connect(self.onNetworkRequestFinished)
 
         self.setWindowTitle("Schulbibliothek")
 
-        self.app.network.finished.connect(self.onNetworkRequestFinished)
-
+        # Create the user interface.
         self.layoutStack = QStackedLayout()
         self.layoutStack.addWidget(self.initTabs())
         self.layoutStack.addWidget(self.initBusyIndicator())
@@ -85,6 +91,7 @@ class MainWindow(QMainWindow):
         centralWidget.setLayout(self.layoutStack)
         self.setCentralWidget(centralWidget)
 
+        # Initialize menu and toolbar actions.
         self.initActions()
         self.initMenu()
         self.initToolBar()
@@ -97,6 +104,7 @@ class MainWindow(QMainWindow):
         self.onRefreshAction()
 
     def initTabs(self):
+        """Initializes the main tabs."""
         self.tabs = QTabWidget()
 
         self.allBooksTable = QTableView()
@@ -127,19 +135,8 @@ class MainWindow(QMainWindow):
         widget.setLayout(layout)
         return widget
 
-    def initBusyIndicator(self):
-        self.busyIndicator = busyindicator.BusyIndicator()
-        return self.busyIndicator
-
-    def showBusyIndicator(self, show):
-        if show:
-            self.layoutStack.setCurrentIndex(1)
-            self.busyIndicator.setEnabled(True)
-        else:
-            self.layoutStack.setCurrentIndex(0)
-            self.busyIndicator.setEnabled(False)
-
     def addTab(self, title, widget):
+        """Creates a tab in the main tab widget."""
         page = QWidget()
         layout = QHBoxLayout()
 
@@ -147,12 +144,28 @@ class MainWindow(QMainWindow):
         layout.addWidget(widget)
         return self.tabs.addTab(page, title)
 
+    def initBusyIndicator(self):
+        """Creates a busy indicator."""
+        self.busyIndicator = busyindicator.BusyIndicator()
+        return self.busyIndicator
+
+    def showBusyIndicator(self, show):
+        """Shows or hides the busy indicator."""
+        if show:
+            self.layoutStack.setCurrentIndex(1)
+            self.busyIndicator.setEnabled(True)
+        else:
+            self.layoutStack.setCurrentIndex(0)
+            self.busyIndicator.setEnabled(False)
+
     def onAllBooksReset(self):
+        """Resizes items in the all-books-table when the model is reset."""
         self.allBooksTable.resizeColumnsToContents()
         self.allBooksTable.setColumnWidth(1, 400)
         self.allBooksTable.resizeRowsToContents()
 
     def onLentBooksReset(self):
+        """Resizes items in the lend-books-table when the model is reset."""
         self.lentBooksTable.resizeColumnsToContents()
         self.lentBooksTable.setColumnWidth(1, 400)
         self.lentBooksTable.resizeRowsToContents()
@@ -277,6 +290,7 @@ class MainWindow(QMainWindow):
                 return
 
     def selectedBooks(self):
+        """Gets the currently selected books of the currently activa tab."""
         if self.tabs.currentIndex() == 0:
             table = self.allBooksTable
         elif self.tabs.currentIndex() == 1:
@@ -304,6 +318,7 @@ class MainWindow(QMainWindow):
         self.app.settings.setValue("MainWindowGeometry", self.saveGeometry())
         return super(MainWindow, self).closeEvent(event)
 
+
 class LoginDialog(QDialog):
     """The login dialog."""
 
@@ -322,6 +337,7 @@ class LoginDialog(QDialog):
         self.ticket = None
 
     def initForm(self):
+        """Creates the login form."""
         form = QFormLayout()
 
         self.urlBox = QLineEdit()
@@ -354,6 +370,7 @@ class LoginDialog(QDialog):
         return widget
 
     def initProgressSpinner(self):
+        """Creates a busy indicator with a cancel button."""
         layout = QVBoxLayout()
 
         self.busyIndicator = busyindicator.BusyIndicator()
@@ -448,6 +465,7 @@ class LoginDialog(QDialog):
         """Make dialog a little wider than strictly nescessary."""
         size = super(LoginDialog, self).sizeHint()
         return QSize(size.width() + 150, size.height())
+
 
 if __name__ == "__main__":
     app = Application(sys.argv)

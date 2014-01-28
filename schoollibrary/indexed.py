@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 import collections
 import operator
 import sys
@@ -54,6 +55,7 @@ except ImportError:
             return wrapper
 
         return decorating_function
+
 
 class IndexedOrderedDict(dict):
     """A dictionary that is indexed by insertion order."""

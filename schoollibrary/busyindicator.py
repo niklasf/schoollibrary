@@ -16,12 +16,16 @@
 # You should have receicved a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 from PySide.QtCore import *
 from PySide.QtGui import *
 
 import sys
 
+
 class BusyIndicator(QWidget):
+    """Indicator for a task of undertermined length."""
+
     def __init__(self, parent=None):
         super(BusyIndicator, self).__init__(parent)
 
@@ -75,6 +79,7 @@ class BusyIndicator(QWidget):
 
     def sizeHint(self):
         return QSize(60, 60)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

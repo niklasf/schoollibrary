@@ -16,6 +16,7 @@
 # You should have receicved a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 from PySide.QtCore import *
 from PySide.QtGui import *
 from PySide.QtNetwork import *
@@ -31,7 +32,9 @@ import util
 import busyindicator
 import network
 
+
 def normalize_isbn(isbn):
+    """Validates and normalizes an ISBN-10 or ISBN-13."""
     isbn = isbn.replace("-", "").replace(" ", "").strip().upper()
 
     if not isbn:
@@ -65,6 +68,7 @@ def normalize_isbn(isbn):
     else:
         raise ValueError("Invalid ISBN.")
 
+
 class Book(object):
     """A book object."""
 
@@ -88,6 +92,7 @@ class Book(object):
         self.lendingSince = None
         self.lendingDays = None
         self.lent = False
+
 
 class BookTableModel(QAbstractTableModel):
     """The book database."""
@@ -335,6 +340,7 @@ class BookTableModel(QAbstractTableModel):
         proxy.lentOnly = True
         return proxy
 
+
 class BookTableSortFilterProxyModel(QSortFilterProxyModel):
     """Sorts and filters an underlying book table model."""
 
@@ -361,6 +367,7 @@ class BookTableSortFilterProxyModel(QSortFilterProxyModel):
                 return False
 
         return True
+
 
 class BookDialog(QDialog):
     """A product editing dialog."""
@@ -672,7 +679,9 @@ class BookDialog(QDialog):
         size = super(BookDialog, self).sizeHint()
         return QSize(size.width() + 150, size.height())
 
+
 class LendingDialog(QDialog):
+    """A dialog for lending or returning a book."""
 
     dialogs = dict()
 
