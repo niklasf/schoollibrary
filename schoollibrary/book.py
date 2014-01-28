@@ -753,6 +753,19 @@ class LendingDialog(QDialog):
         self.app.network.finished.connect(self.onNetworkRequestFinished)
         self.ticket = None
 
+        # Handle book data changes.
+        self.app.books.dataChanged.connect(self.onBooksDataChanged)
+        self.app.books.modelReset.connect(self.onBooksModelReset)
+
+    def onBooksDataChanged(self, topLeft, bottomRight):
+        for row in xrange(topLeft.row(), bottomRight.row() + 1):
+            if self.book.id == self.app.books.index(row, 0, QModelIndex()).data(Qt.UserRole):
+                self.updateValues(False)
+                break
+
+    def onBooksModelReset(self):
+        self.updateValues(False)
+
     def updateValues(self, busy):
         self.book = self.app.books.cache[self.book.id]
 
