@@ -309,6 +309,7 @@ class MainWindow(QMainWindow):
             self.contextMenu.exec_(self.lentBooksTable.viewport().mapToGlobal(position))
 
     def onNetworkRequestFinished(self, reply):
+        """Called when a network request is finished."""
         if reply.request().attribute(network.Ticket) == self.ticket:
             self.ticket = None
             self.showBusyIndicator(False)
@@ -433,7 +434,7 @@ class LoginDialog(QDialog):
 
         # Check for network errors.
         if reply.error() != QNetworkReply.NoError:
-            QMessageBox.warning(self, self.windowTitle(), reply.errorString())
+            QMessageBox.warning(self, self.windowTitle(), self.censorError(reply.errorString()))
             return
 
         # Check for HTTP errors.
@@ -460,6 +461,11 @@ class LoginDialog(QDialog):
             else:
                 self.app.settings.setValue("ApiPassword", "")
             self.accept()
+
+    def censorError(self, error):
+        """Censors the password in an error message."""
+        password = self.passwordBox.text()
+        return str(error).replace(password, "***")
 
     def sizeHint(self):
         """Make dialog a little wider than strictly nescessary."""

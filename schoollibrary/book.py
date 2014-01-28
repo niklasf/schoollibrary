@@ -625,7 +625,7 @@ class BookDialog(QDialog):
 
         # Check for network errors.
         if reply.error() != QNetworkReply.NoError:
-            QMessageBox.warning(self, self.windowTitle(), reply.errorString())
+            QMessageBox.warning(self, self.windowTitle(), self.app.login.censorError(reply.errorString()))
             return
 
         # Check for HTTP errors.
@@ -901,7 +901,7 @@ class LendingDialog(QDialog):
 
         # Check for network errors.
         if reply.error() != QNetworkReply.NoError:
-            QMessageBox.warning(self, self.windowTitle(), reply.errorString())
+            QMessageBox.warning(self, self.windowTitle(), self.app.login.censorError(reply.errorString()))
             return
 
         # Check for HTTP errors.
