@@ -657,21 +657,17 @@ class BookDialog(QDialog):
         self.showBusy(False)
 
         # Check for network errors.
-        if reply.error() != QNetworkReply.NoError:
+        if reply.error() == QNetworkReply.ContentNotFoundError:
+            QMessageBox.warning(self, self.windowTitle(), u"Das Buch wurde inzwischen gelöscht.")
+            self.reject()
+            return
+        elif reply.error() != QNetworkReply.NoError:
             QMessageBox.warning(self, self.windowTitle(), self.app.login.censorError(reply.errorString()))
             return
 
         # Check the HTTP status code.
         status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
-        if status == 403:
-            QMessageBox.warning(self, self.windowTitle(), u"Keine Berechtigung zum Eintragen oder Bearbeiten von Büchern.")
-            self.reject()
-            return
-        elif status == 404:
-            QMessageBox.warning(self, self.windowTitle(), u"Das Buch wurde inzwischen gelöscht.")
-            self.reject()
-            return
-        elif status != 200:
+        if status != 200:
             QMessageBox.warning(self, self.windowTitle(), "HTTP Status Code: %d" % status)
             return
 
