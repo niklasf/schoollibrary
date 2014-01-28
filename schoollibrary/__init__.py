@@ -98,6 +98,7 @@ class MainWindow(QMainWindow):
 
         # Restore geometry.
         self.restoreGeometry(self.app.settings.value("MainWindowGeometry"))
+        self.restoreState(self.app.settings.value("MainWindowState"))
 
         # Load data.
         self.ticket = None
@@ -238,6 +239,7 @@ class MainWindow(QMainWindow):
         """Creates the toolbar."""
         toolBar = self.addToolBar("Test")
         toolBar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        toolBar.setObjectName("MainWindowToolBar")
 
         toolBar.addAction(self.lendingAction)
         toolBar.addAction(self.addBookAction)
@@ -321,6 +323,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """Saves the geometry when the window is closed."""
         self.app.settings.setValue("MainWindowGeometry", self.saveGeometry())
+        self.app.settings.setValue("MainWindowState", self.saveState())
         return super(MainWindow, self).closeEvent(event)
 
 
