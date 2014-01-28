@@ -271,22 +271,16 @@ class BookTableModel(QAbstractTableModel):
                 self.cache[book.id] = book
 
             self.endResetModel()
-        else:
-            match = self.bookPathPattern.match(path)
-            if match and request.attribute(network.HttpMethod) == "DELETE":
-                # Book deleted.
-                id = int(match.group(1))
-                if id in self.cache:
-                    row = self.cache.keys().index(id)
-                    self.beginRemoveRows(QModelIndex(), row, row)
-                    del self.cache[id]
-                    self.endRemoveRows()
-            elif match and request.attribute(network.HttpMethod) in ("GET", "PUT"):
-                # Book changed or reloaded.
+
+        # Book updated.
+        match = self.bookPathPattern.match(path)
+        if match:
+            id = int(match.group(1))
+
+            if method in ("GET", "PUT") and status == 200:
                 data = json.loads(str(reply.readAll()))
                 book = self.bookFromData(data)
-
-                if book.id in self.cache:
+                if book.id in self.sache:
                     bookIndex = self.indexFromBook(self.cache[book.id])
                     self.cache[book.id] = book
                     self.dataChanged.emit(bookIndex, self.index(bookIndex.row(), self.columnCount() - 1, QModelIndex()))
@@ -294,6 +288,12 @@ class BookTableModel(QAbstractTableModel):
                     self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
                     self.cache[book.id] = book
                     self.endInsertRows()
+            elif (method == "GET" and status == 404) or (method == "DELETE" and status in (200, 204)):
+                if id in self.cache:
+                    row = self.cache.keys.index(id)
+                    self.beginRemoveRows(QModelIndex(), row, row)
+                    del self.cache[id]
+                    self.endRemoveRows()
 
         # Lending updated.
         match = self.lendingPathPattern.match(path)
@@ -661,9 +661,17 @@ class BookDialog(QDialog):
             QMessageBox.warning(self, self.windowTitle(), self.app.login.censorError(reply.errorString()))
             return
 
-        # Check for HTTP errors.
+        # Check the HTTP status code.
         status = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
-        if status != 200:
+        if status == 403:
+            QMessageBox.warning(self, self.windowTitle(), u"Keine Berechtigung zum Eintragen oder Bearbeiten von Büchern.")
+            self.reject()
+            return
+        elif status == 404:
+            QMessageBox.warning(self, self.windowTitle(), u"Das Buch wurde inzwischen gelöscht.")
+            self.reject()
+            return
+        elif status != 200:
             QMessageBox.warning(self, self.windowTitle(), "HTTP Status Code: %d" % status)
             return
 
