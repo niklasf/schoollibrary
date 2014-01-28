@@ -450,6 +450,7 @@ app.delete('/books/:id/lending', function (req, res) {
             if (err) {
                 return res.send(400, err);
             } else {
+                res.setHeader('ETag', book.etag);
                 return res.send(204);
             }
         });
