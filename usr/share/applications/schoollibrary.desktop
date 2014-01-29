@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Schoollibrary
+Comment=Manage a schoollibrary
+Comment[de]=Schulbibliothek verwalten
+GenericName=School library
+GenericName[de]=Schulbibliothek
+Icon=schoollibrary
+Exec=schoollibrary-client
+Terminal=false
+Categories=Education
+Keywords=Book;School;Library;IServ
+Keywords[de]=Buch;Schule;Bibliothek;Bücherei;IServ
