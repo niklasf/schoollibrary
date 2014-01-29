@@ -290,7 +290,7 @@ class BookTableModel(QAbstractTableModel):
             if method in ("GET", "PUT") and status == 200:
                 data = json.loads(str(reply.readAll()))
                 book = self.bookFromData(data)
-                if book.id in self.sache:
+                if book.id in self.cache:
                     bookIndex = self.indexFromBook(self.cache[book.id])
                     self.cache[book.id] = book
                     self.dataChanged.emit(bookIndex, self.index(bookIndex.row(), self.columnCount() - 1, QModelIndex()))
