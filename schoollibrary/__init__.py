@@ -306,12 +306,12 @@ class MainWindow(QMainWindow):
 
     def onLendingAction(self):
         """Handles the lending action."""
-        for currentBook in self.selectedBooks():
+        for currentBook in self.selectedBooks(20):
             book.LendingDialog.open(self.app, currentBook, self)
 
     def onEditBookAction(self):
         """Handles the edit book action."""
-        for currentBook in self.selectedBooks():
+        for currentBook in self.selectedBooks(20):
             book.BookDialog.open(self.app, currentBook, self)
 
     def onDeleteBookAction(self):
@@ -334,14 +334,18 @@ class MainWindow(QMainWindow):
             elif result == QMessageBox.Cancel:
                 return
 
-    def selectedBooks(self):
+    def selectedBooks(self, limit=None):
         """Gets the currently selected books of the currently activa tab."""
         if self.tabs.currentIndex() == 0:
             table = self.allBooksTable
         elif self.tabs.currentIndex() == 1:
             table = self.lentBooksTable
         model = table.model()
-        return [model.indexToBook(index) for index in table.selectedIndexes() if index.column() == 0]
+        books = [model.indexToBook(index) for index in table.selectedIndexes() if index.column() == 0]
+        if limit:
+            return books[:limit]
+        else:
+            return books
 
     def onAllBooksCustomContextMenuRequested(self, position):
         """Opens the context menu for all books."""
