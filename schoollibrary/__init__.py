@@ -205,6 +205,10 @@ class MainWindow(QMainWindow):
         self.lendingAction.triggered.connect(self.onLendingAction)
         self.lendingAction.setEnabled(self.app.login.libraryLend)
 
+        self.labelPrintAction = QAction(u"Labels drucken", self)
+        self.labelPrintAction.setShortcut("Ctrl+P")
+        self.labelPrintAction.triggered.connect(self.onLabelPrintAction)
+
         self.editBookAction = QAction("Buch bearbeiten", self)
         self.editBookAction.triggered.connect(self.onEditBookAction)
         self.editBookAction.setEnabled(self.app.login.libraryModify)
@@ -271,6 +275,8 @@ class MainWindow(QMainWindow):
         bookMenu.addSeparator()
         bookMenu.addAction(self.lendingAction)
         bookMenu.addSeparator()
+        bookMenu.addAction(self.labelPrintAction)
+        bookMenu.addSeparator()
         bookMenu.addAction(self.editBookAction)
         bookMenu.addAction(self.deleteBookAction)
 
@@ -283,6 +289,8 @@ class MainWindow(QMainWindow):
 
         self.contextMenu = QMenu()
         self.contextMenu.addAction(self.lendingAction)
+        self.contextMenu.addSeparator()
+        self.contextMenu.addAction(self.labelPrintAction)
         self.contextMenu.addSeparator()
         self.contextMenu.addAction(self.editBookAction)
         self.contextMenu.addAction(self.deleteBookAction)
@@ -339,6 +347,11 @@ class MainWindow(QMainWindow):
                 self.app.books.delete(currentBook)
             elif result == QMessageBox.Cancel:
                 return
+
+    def onLabelPrintAction(self):
+        """Handles the label print action."""
+        dialog = book.LabelPrintDialog(self.app, self.selectedBooks(), self)
+        dialog.show()
 
     def selectedBooks(self, limit=None):
         """Gets the currently selected books of the currently activa tab."""

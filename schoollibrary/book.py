@@ -31,6 +31,7 @@ import indexed
 import util
 import busyindicator
 import network
+import printpreview
 
 
 def normalize_isbn(isbn):
@@ -980,3 +981,58 @@ class LendingDialog(QDialog):
         if not status in (200, 204):
             QMessageBox.warning(self, self.windowTitle(), "HTTP Status Code: %d" % status)
             return
+
+
+class LabelPrintDialog(QDialog):
+    """Allows printing labels for the selected books."""
+
+    def __init__(self, app, books, parent=None):
+        super(LabelPrintDialog, self).__init__(parent)
+        self.app = app
+        self.books = books
+
+        self.documentBox = printpreview.ExtendedPrintPreview()
+        self.documentBox.printPreview.paintRequested.connect(self.onPaintRequested)
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.documentBox)
+        self.setLayout(layout)
+
+    def onPaintRequested(self, printer):
+        painter = QPainter(printer)
+        painter.setFont(QFont("Courier New", 8))
+
+        x = 0
+        y = 0
+
+        for book in self.books:
+            if x + 109 >= printer.pageRect().width():
+                x = 0
+                y += 14 + 43
+
+            if y + 43 >= printer.pageRect().height():
+                if not printer.newPage():
+                    return
+
+                x = 0
+                y = 0
+
+            labelRect = QRect(x, y, 109, 43)
+
+            lines = []
+
+            if book.signature:
+                lines.append(book.signature)
+
+            lines.append(str(book.id))
+
+            if book.location:
+                lines.append(book.location)
+
+            painter.setClipping(False)
+            painter.drawRect(labelRect)
+            painter.drawText(labelRect, Qt.AlignCenter, "\n".join(lines))
+
+            x += 109 + 14
+
+        painter.end()
