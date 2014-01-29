@@ -239,7 +239,10 @@ app.get('/books/', function (req, res) {
             }
         }
 
-        res.setHeader('ETag', etag);
+        console.log('If-None-Match: ' + req.get('If-None-Match'));
+        console.log('ETag:          ' + etag);
+
+        res.set('ETag', etag);
         res.json(response);
     });
 });
@@ -251,7 +254,7 @@ app.post('/books/', function (req, res) {
 
     var book = new Book();
 
-    book.etag = crypto.randomBytes(4).readUInt32BE(0);
+    book.etag = crypto.randomBytes(2).readUInt16BE(0);
     book.title = req.body.title;
     book.authors = req.body.authors;
     book.topic = req.body.topic;
@@ -270,7 +273,7 @@ app.post('/books/', function (req, res) {
         if (err) {
             res.send(400, err);
         } else {
-            res.setHeader('ETag', book.etag);
+            res.set('ETag', book.etag);
             res.json(book.toObject({ virtuals: true }));
         }
     });
@@ -290,7 +293,7 @@ app.get('/books/:id/', function (req, res) {
             delete response.lending;
         }
 
-        res.setHeader('ETag', book.etag);
+        res.set('ETag', book.etag);
         res.json(response);
     });
 });
@@ -311,7 +314,7 @@ app.put('/books/:id/', function (req, res) {
             return res.send(409);
         }
 
-        book.etag = crypto.randomBytes(4).readUInt32BE(0);
+        book.etag = crypto.randomBytes(2).readUInt16BE(0);
         book.title = req.body.title;
         book.authors = req.body.authors;
         book.topic = req.body.topic;
@@ -336,7 +339,7 @@ app.put('/books/:id/', function (req, res) {
                 delete response.lending;
             }
 
-            res.setHeader('ETag', book.etag);
+            res.set('ETag', book.etag);
             res.json(response);
         });
     });
@@ -377,7 +380,7 @@ app.get('/books/:id/lending', function (req, res) {
             return res.send(403);
         }
 
-        res.setHeader('ETag', book.etag);
+        res.set('ETag', book.etag);
         res.json(book.lending);
     });
 });
@@ -410,7 +413,7 @@ app.post('/books/:id/lending', function (req, res) {
             book.lending.since = new Date();
         }
 
-        book.etag = crypto.randomBytes(4).readUInt32BE(0);
+        book.etag = crypto.randomBytes(2).readUInt16BE(0);
         book.lending.user = req.body.user;
         book.lending.days = parseInt(req.body.days, 10) || 14;
 
@@ -419,7 +422,7 @@ app.post('/books/:id/lending', function (req, res) {
                 return res.send(400, err);
             }
 
-            res.setHeader('ETag', book.etag);
+            res.set('ETag', book.etag);
             res.json(book.lending);
         });
     });
@@ -441,7 +444,7 @@ app.delete('/books/:id/lending', function (req, res) {
             return res.send(403);
         }
 
-        book.etag = crypto.randomBytes(4).readUInt32BE(0);
+        book.etag = crypto.randomBytes(2).readUInt16BE(0);
         book.lending.user = null;
         book.lending.since = null;
         book.lending.days = null;
@@ -450,7 +453,7 @@ app.delete('/books/:id/lending', function (req, res) {
             if (err) {
                 return res.send(400, err);
             } else {
-                res.setHeader('ETag', book.etag);
+                res.set('ETag', book.etag);
                 return res.send(204);
             }
         });
