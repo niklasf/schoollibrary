@@ -775,6 +775,10 @@ class LendingDialog(QDialog):
         self.updateValues(False)
 
     def updateValues(self, busy):
+        if not self.book.id in self.app.books.cache:
+            self.reject()
+            return
+
         self.book = self.app.books.cache[self.book.id]
 
         if busy:
