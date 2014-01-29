@@ -233,7 +233,15 @@ class BookTableModel(QAbstractTableModel):
                     return "Ausgeliehen"
 
     def reload(self):
+        # Calculate checksum over all books.
+        etag = 0
+        for book in self.cache.values():
+            etag ^= book.etag
+
+        # Send reload request.
         request = QNetworkRequest(self.app.login.getUrl("/books/"))
+        if etag:
+            request.setRawHeader(QByteArray("If-None-Match"), QByteArray(str(etag)))
         return self.app.network.http("GET", request)
 
     def delete(self, book):
@@ -258,7 +266,9 @@ class BookTableModel(QAbstractTableModel):
             self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
             self.cache[book.id] = book
             self.endInsertRows()
-        elif path.endswith("/books/") and request.attribute(network.HttpMethod) == "GET":
+
+        # Book list updated.
+        if path.endswith("/books/") and request.attribute(network.HttpMethod) == "GET" and status == 200:
             # Book list reloaded.
             self.beginResetModel()
             self.cache.clear()
