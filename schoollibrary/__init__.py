@@ -137,6 +137,7 @@ class MainWindow(QMainWindow):
         self.allBooksTable.customContextMenuRequested.connect(self.onAllBooksCustomContextMenuRequested)
         self.allBooksTable.setModel(self.app.books.getProxy())
         self.allBooksTable.setSortingEnabled(True)
+        self.allBooksTable.doubleClicked.connect(self.onBookDoubleClicked)
         self.allBooksTab = self.wrapWidget(self.allBooksTable)
 
         self.lentBooksTable = QTableView()
@@ -145,6 +146,7 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.customContextMenuRequested.connect(self.onLentBooksCustomContextMenuRequested)
         self.lentBooksTable.setModel(self.app.books.getLentProxy())
         self.lentBooksTable.setSortingEnabled(True)
+        self.lentBooksTable.doubleClicked.connect(self.onBookDoubleClicked)
         self.lentBooksTab = self.wrapWidget(self.lentBooksTable)
 
         return self.wrapWidget(self.tabs)
@@ -303,6 +305,10 @@ class MainWindow(QMainWindow):
     def onAddBookAction(self):
         """Handles the add book action."""
         book.BookDialog.open(self.app, None, self)
+
+    def onBookDoubleClicked(self):
+        """Handles a double click on a book."""
+        self.lendingAction.trigger()
 
     def onLendingAction(self):
         """Handles the lending action."""
