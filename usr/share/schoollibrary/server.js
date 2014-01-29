@@ -239,9 +239,6 @@ app.get('/books/', function (req, res) {
             }
         }
 
-        console.log('If-None-Match: ' + req.get('If-None-Match'));
-        console.log('ETag:          ' + etag);
-
         res.set('ETag', etag);
         res.json(response);
     });
