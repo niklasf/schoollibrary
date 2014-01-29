@@ -661,7 +661,11 @@ class BookDialog(QDialog):
             QMessageBox.warning(self, self.windowTitle(), u"Das Buch wurde inzwischen gelöscht.")
             self.reject()
             return
+        elif reply.error() == QNetworkReply.ContentOperationNotPermittedError:
+            QMessageBox.warning(self, self.windowTitle(), u"Keine Berechtigung zum Eintragen und Bearbeiten von Büchern.")
+            return
         elif reply.error() != QNetworkReply.NoError:
+            print reply.error()
             QMessageBox.warning(self, self.windowTitle(), self.app.login.censorError(reply.errorString()))
             return
 
