@@ -991,10 +991,13 @@ class LabelPrintDialog(QDialog):
         self.app = app
         self.books = books
 
+        self.setWindowTitle("Etiketten drucken")
+        self.setWindowFlags((self.windowFlags() & ~Qt.WindowContextHelpButtonHint) | Qt.WindowMaximizeButtonHint)
+
         self.documentBox = printpreview.ExtendedPrintPreview()
         self.documentBox.printPreview.paintRequested.connect(self.onPaintRequested)
 
-        layout = QHBoxLayout()
+        layout = QStackedLayout()
         layout.addWidget(self.documentBox)
         self.setLayout(layout)
 
@@ -1056,3 +1059,6 @@ class LabelPrintDialog(QDialog):
                 x += 109 + 14
 
         painter.end()
+
+    def sizeHint(self):
+        return QSize(800, 600)
