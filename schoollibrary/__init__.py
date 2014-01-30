@@ -356,9 +356,9 @@ class MainWindow(QMainWindow):
 
     def selectedBooks(self, limit=None):
         """Gets the currently selected books of the currently activa tab."""
-        if self.tabs.currentIndex() == 0:
+        if self.tabs.widget(self.tabs.currentIndex()) == self.allBooksTab:
             table = self.allBooksTable
-        elif self.tabs.currentIndex() == 1:
+        elif self.tabs.widget(self.tabs.currentIndex()) == self.lentBooksTab:
             table = self.lentBooksTable
 
         model = table.model()
