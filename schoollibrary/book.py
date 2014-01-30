@@ -1005,34 +1005,54 @@ class LabelPrintDialog(QDialog):
         x = 0
         y = 0
 
-        for book in self.books:
-            if x + 109 >= printer.pageRect().width():
-                x = 0
-                y += 14 + 43
+        booksPerLine = (printer.pageRect().width() + 14) / (109 + 14)
+        booksPerPage = (printer.pageRect().height() + 14) / (43 + 14) * booksPerLine
 
-            if y + 43 >= printer.pageRect().height():
+        for page in range(0, len(self.books) / booksPerPage + 1):
+            # Start a new page.
+            if page != 0:
                 if not printer.newPage():
                     return
 
-                x = 0
-                y = 0
+            # Get the slice of books for this page.
+            books = self.books[booksPerPage * page:booksPerPage * page + booksPerPage]
 
-            labelRect = QRect(x, y, 109, 43)
+            # Draw all rectangles first, draw texts later.
+            # This works around a Qt bug now allowing to keep drawing rectangles
+            # after text was clipped.
+            x = 0
+            y = 0
 
-            lines = []
+            for book in books:
+                if x + 109 >= printer.pageRect().width():
+                    x = 0
+                    y += 14 + 43
 
-            if book.signature:
-                lines.append(book.signature)
+                painter.drawRect(x, y, 109, 43)
 
-            lines.append(str(book.id))
+                x += 109 + 14
 
-            if book.location:
-                lines.append(book.location)
+            # Draw texts.
+            x = 0
+            y = 0
 
-            painter.setClipping(False)
-            painter.drawRect(labelRect)
-            painter.drawText(labelRect, Qt.AlignCenter, "\n".join(lines))
+            for book in books:
+                if x + 109 >= printer.pageRect().width():
+                    x = 0
+                    y += 14 + 43
 
-            x += 109 + 14
+                lines = []
+
+                if book.signature:
+                    lines.append(book.signature)
+
+                lines.append(str(book.id))
+
+                if book.location:
+                    lines.append(book.location)
+
+                painter.drawText(QRect(x, y, 109, 43), Qt.AlignCenter,  "\n".join(lines))
+
+                x += 109 + 14
 
         painter.end()
