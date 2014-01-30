@@ -32,6 +32,7 @@ from PySide.QtNetwork import *
 import sys
 import json
 import uuid
+import itertools
 
 import book
 import user
@@ -359,16 +360,20 @@ class MainWindow(QMainWindow):
             table = self.allBooksTable
         elif self.tabs.currentIndex() == 1:
             table = self.lentBooksTable
+
         model = table.model()
-        books = [model.indexToBook(index) for index in table.selectedIndexes() if index.column() == 0]
+        selectionModel = table.selectionModel()
+
+        books = (model.indexToBook(index) for index in selectionModel.selectedRows())
+
         if limit:
-            return books[:limit]
+            return list(itertools.islice(books, 0, limit))
         else:
-            return books
+            return list(books)
 
     def onAllBooksCustomContextMenuRequested(self, position):
         """Opens the context menu for all books."""
-        if self.selectedBooks():
+        if self.selectedBooks(1):
             self.contextMenu.exec_(self.allBooksTable.viewport().mapToGlobal(position))
 
     def onLentBooksCustomContextMenuRequested(self, position):
