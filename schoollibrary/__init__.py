@@ -377,7 +377,11 @@ class MainWindow(QMainWindow):
         """Opens a SearchDialog."""
         dialog = book.SearchDialog(self.app, self)
         if dialog.exec_():
-            print "accepted"
+            self.bookSearchTable.model().setSearch(dialog.searchBox.text())
+            action = self.tabVisibilityActions.actions()[2]
+            action.setChecked(True)
+            self.onTabVisibilityAction(action)
+            self.tabs.setCurrentWidget(self.bookSearchTab)
 
     def selectedBooks(self, limit=None):
         """Gets the currently selected books of the currently activa tab."""

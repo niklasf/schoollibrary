@@ -396,6 +396,27 @@ class BookTableSortFilterProxyModel(QSortFilterProxyModel):
 
         self.lentOnly = False
 
+        self.searchString = None
+        self.searchIsbn = None
+        self.searchId = None
+
+    def setSearch(self, search):
+        self.searchString = search.lower()
+        self.searchId = None
+        self.searchIsbn = None
+
+        try:
+            self.searchId = int(search)
+        except ValueError:
+            pass
+
+        try:
+            self.searchIsbn = normalize_isbn(search)
+        except ValueError:
+            pass
+
+        self.invalidateFilter()
+
     def indexToBook(self, index):
         """Gets the book associated with an index."""
         return self.sourceModel().indexToBook(self.mapToSource(index))
@@ -406,9 +427,49 @@ class BookTableSortFilterProxyModel(QSortFilterProxyModel):
 
     def filterAcceptsRow(self, row, parent=QModelIndex()):
         """Checks if a book should be displayed."""
-        if self.lentOnly:
-            book = self.sourceModel().indexToBook(self.sourceModel().index(row, 0, parent))
-            if not book.lent:
+        book = self.sourceModel().indexToBook(self.sourceModel().index(row, 0, parent))
+
+        if self.lentOnly and not book.lent:
+            return False
+
+        if self.searchIsbn:
+            if self.searchIsbn == book.isbn:
+                return True
+            else:
+                return False
+
+        if self.searchId:
+            if self.searchId == book.id:
+                return True
+            else:
+                return False
+
+        if self.searchString:
+            if self.searchString in book.signature.lower():
+                return True
+            elif self.searchString in book.location.lower():
+                return True
+            elif self.searchString in book.title.lower():
+                return True
+            elif self.searchString in book.authors.lower():
+                return True
+            elif self.searchString in book.topic.lower():
+                return True
+            elif self.searchString in book.volume.lower():
+                return True
+            elif self.searchString in book.keywords.lower():
+                return True
+            elif self.searchString in book.publisher.lower():
+                return True
+            elif self.searchString in book.placeOfPublication.lower():
+                return True
+            elif self.searchString == str(book.year):
+                return True
+            elif self.searchString in book.edition.lower():
+                return True
+            elif book.lendingUser and self.searchString in book.lendingUser:
+                return True
+            else:
                 return False
 
         return True
