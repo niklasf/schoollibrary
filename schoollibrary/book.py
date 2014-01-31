@@ -166,6 +166,9 @@ class BookTableModel(QAbstractTableModel):
                         else:
                             return "%s seit %d Tagen" % (book.lendingUser, duration)
                     return "Ja"
+        elif role == Qt.EditRole:
+            if index.column() == 12:
+                return book.isbn
         elif role == Qt.UserRole:
             if index.column() == 14:
                 return 1 if book.lendable else 0
@@ -177,7 +180,7 @@ class BookTableModel(QAbstractTableModel):
             else:
                 return index.data(Qt.DisplayRole)
         elif role == Qt.TextAlignmentRole:
-            if index.column() in (0, 1, 2, 11, 12, 14):
+            if index.column() in (0, 1, 2, 11, 14):
                 return Qt.AlignCenter
         elif role == Qt.FontRole:
             if index.column() == 4:
@@ -1062,3 +1065,38 @@ class LabelPrintDialog(QDialog):
 
     def sizeHint(self):
         return QSize(800, 600)
+
+
+class SearchDialog(QDialog):
+    """Allows searching for books."""
+    def __init__(self, app, parent=None):
+        super(SearchDialog, self).__init__(parent)
+        self.app = app
+
+        layout = QHBoxLayout()
+
+        searchBoxCompleter = QCompleter()
+        searchBoxCompleter.setModel(self.app.books)
+        searchBoxCompleter.setCompletionColumn(12)
+
+        self.searchBox = QLineEdit()
+        self.searchBox.setCompleter(searchBoxCompleter)
+        layout.addWidget(self.searchBox, 1)
+
+        self.searchButton = QPushButton("Suchen")
+        self.searchButton.clicked.connect(self.onSearchButtonClicked)
+        layout.addWidget(self.searchButton)
+
+        self.setWindowTitle("Suche")
+        self.setWindowIcon(QIcon(self.app.data("search-books.png")))
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+        self.setLayout(layout)
+
+    def onSearchButtonClicked(self):
+        """Handle clicks on the search button."""
+        self.accept()
+
+    def sizeHint(self):
+        """Make dialog a bit wider than nescessary."""
+        size = super(SearchDialog, self).sizeHint()
+        return QSize(size.width() + 150, size.height())

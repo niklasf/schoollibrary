@@ -105,6 +105,8 @@ class MainWindow(QMainWindow):
         self.allBooksTable.horizontalHeader().restoreState(self.app.settings.value("AllBooksTableState"))
         self.lentBooksTable.horizontalHeader().setMovable(True)
         self.lentBooksTable.horizontalHeader().restoreState(self.app.settings.value("LentBooksTableState"))
+        self.bookSearchTable.horizontalHeader().setMovable(True)
+        self.bookSearchTable.horizontalHeader().restoreState(self.app.settings.value("BookSearchTableState"))
 
         # Restore tab visibilities.
         settingsKeys = ["AllBooksTabHidden", "LendBooksTabHidden"]
@@ -149,6 +151,15 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.setSortingEnabled(True)
         self.lentBooksTable.doubleClicked.connect(self.onBookDoubleClicked)
         self.lentBooksTab = self.wrapWidget(self.lentBooksTable)
+
+        self.bookSearchTable = QTableView()
+        self.bookSearchTable.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.bookSearchTable.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.bookSearchTable.customContextMenuRequested.connect(self.onBookSearchCustomContextMenuRequested)
+        self.bookSearchTable.setModel(self.app.books.getProxy())
+        self.bookSearchTable.setSortingEnabled(True)
+        self.bookSearchTable.doubleClicked.connect(self.onBookDoubleClicked)
+        self.bookSearchTab = self.wrapWidget(self.bookSearchTable)
 
         return self.wrapWidget(self.tabs)
 
@@ -219,11 +230,17 @@ class MainWindow(QMainWindow):
         self.deleteBookAction.triggered.connect(self.onDeleteBookAction)
         self.deleteBookAction.setEnabled(self.app.login.libraryDelete)
 
+        self.searchBooksAction = QAction("Suche", self)
+        self.searchBooksAction.setShortcut("Ctrl+F")
+        self.searchBooksAction.setIcon(QIcon(self.app.data("search-books.png")))
+        self.searchBooksAction.triggered.connect(self.onSearchBooksAction)
+
         self.tabVisibilityActions = QActionGroup(self)
         self.tabVisibilityActions.triggered.connect(self.onTabVisibilityAction)
         self.tabVisibilityActions.setExclusive(False)
         self.tabVisibilityActions.addAction(u"Alle Bücher").setData(0)
         self.tabVisibilityActions.addAction(u"Ausgeliehene Bücher").setData(1)
+        self.tabVisibilityActions.addAction(u"Suche").setData(2)
         for action in self.tabVisibilityActions.actions():
             action.setCheckable(True)
 
@@ -258,6 +275,7 @@ class MainWindow(QMainWindow):
 
         self.toolBar.addAction(self.lendingAction)
         self.toolBar.addAction(self.addBookAction)
+        self.toolBar.addAction(self.searchBooksAction)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.refreshAction)
 
@@ -275,6 +293,7 @@ class MainWindow(QMainWindow):
         bookMenu.addAction(self.addBookAction)
         bookMenu.addSeparator()
         bookMenu.addAction(self.lendingAction)
+        bookMenu.addAction(self.searchBooksAction)
         bookMenu.addSeparator()
         bookMenu.addAction(self.labelPrintAction)
         bookMenu.addSeparator()
@@ -354,12 +373,20 @@ class MainWindow(QMainWindow):
         dialog = book.LabelPrintDialog(self.app, self.selectedBooks(), self)
         dialog.show()
 
+    def onSearchBooksAction(self):
+        """Opens a SearchDialog."""
+        dialog = book.SearchDialog(self.app, self)
+        if dialog.exec_():
+            print "accepted"
+
     def selectedBooks(self, limit=None):
         """Gets the currently selected books of the currently activa tab."""
         if self.tabs.widget(self.tabs.currentIndex()) == self.allBooksTab:
             table = self.allBooksTable
         elif self.tabs.widget(self.tabs.currentIndex()) == self.lentBooksTab:
             table = self.lentBooksTable
+        elif self.tabs.widget(self.tabs.currentIndex()) == self.bookSearchTab:
+            table = self.bookSearchTable
 
         model = table.model()
         selectionModel = table.selectionModel()
@@ -378,32 +405,37 @@ class MainWindow(QMainWindow):
 
     def onLentBooksCustomContextMenuRequested(self, position):
         """Opens the context menu for lent books."""
-        if self.selectedBooks():
+        if self.selectedBooks(1):
             self.contextMenu.exec_(self.lentBooksTable.viewport().mapToGlobal(position))
+
+    def onBookSearchCustomContextMenuRequested(self, position):
+        """Opens the context menu for searched books."""
+        if self.selectedBooks(1):
+            self.contextMenu.exec_(self.bookSearchTable.viewport().mapToGlobal(position))
 
     def onColumnVisibilityAction(self, action):
         """Handles the column visibility actions."""
         hidden = not action.isChecked()
         self.allBooksTable.horizontalHeader().setSectionHidden(action.data(), hidden)
         self.lentBooksTable.horizontalHeader().setSectionHidden(action.data(), hidden)
+        self.bookSearchTable.horizontalHeader().setSectionHidden(action.data(), hidden)
         settingsKey = "BookTableColumn%dHidden" % action.data()
         self.app.settings.setValue(settingsKey, "true" if hidden else "false")
 
     def onTabVisibilityAction(self, action):
-        titles = [u"Alle Bücher", u"Ausgeliehene Bücher"]
-        widgets = [self.allBooksTab, self.lentBooksTab]
+        titles = [u"Alle Bücher", u"Ausgeliehene Bücher", "Suche"]
+        widgets = [self.allBooksTab, self.lentBooksTab, self.bookSearchTab]
         settingsKeys = ["AllBooksTabHidden", "LendBooksTabHidden"]
 
-        if not action.isChecked():
-            self.app.settings.setValue(settingsKeys[action.data()], "true")
+        if action.data() < len(settingsKeys):
+            self.app.settings.setValue(settingsKeys[action.data()], not action.isChecked())
 
+        if not action.isChecked():
             for index in range(0, self.tabs.count()):
                 if self.tabs.widget(index) == widgets[action.data()]:
                     self.tabs.removeTab(index)
                     return
         else:
-            self.app.settings.setValue(settingsKeys[action.data()], "false")
-
             for index in range(0, self.tabs.count()):
                 if self.tabs.widget(index) == widgets[action.data()]:
                     return
@@ -416,7 +448,7 @@ class MainWindow(QMainWindow):
 
 
     def onTabCloseRequested(self, tabIndex):
-        widgets = [self.allBooksTab, self.lentBooksTab]
+        widgets = [self.allBooksTab, self.lentBooksTab, self.bookSearchTab]
 
         for actionIndex, widget in enumerate(widgets):
             if widget == self.tabs.widget(tabIndex):
@@ -437,6 +469,7 @@ class MainWindow(QMainWindow):
         self.app.settings.setValue("MainWindowState", self.saveState())
         self.app.settings.setValue("AllBooksTableState", self.allBooksTable.horizontalHeader().saveState())
         self.app.settings.setValue("LentBooksTableState", self.lentBooksTable.horizontalHeader().saveState())
+        self.app.settings.setValue("BookSearchTableState", self.bookSearchTable.horizontalHeader().saveState())
         return super(MainWindow, self).closeEvent(event)
 
 
