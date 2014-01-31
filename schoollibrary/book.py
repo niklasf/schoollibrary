@@ -858,6 +858,7 @@ class LendingDialog(QDialog):
         if busy:
             self.layoutStack.setCurrentIndex(2)
             self.busyIndicator.setEnabled(True)
+            return
         else:
             self.busyIndicator.setEnabled(False)
 
