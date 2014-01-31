@@ -154,7 +154,7 @@ app.use(connectBasicAuth(function (credentials, req, res, next) {
             req.user = credentials.username;
 
             req.library_admin = req.groups.indexOf('library_admin') !== -1;
-            req.library_modify = req.library_admin || req.groups.indexOf('library_modfiy') !== -1;
+            req.library_modify = req.library_admin || req.groups.indexOf('library_modify') !== -1;
             req.library_delete = req.library_admin || req.groups.indexOf('library_delete') !== -1;
             req.library_lend = req.library_admin || req.groups.indexOf('library_lend') !== -1;
 
