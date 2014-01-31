@@ -1134,7 +1134,9 @@ class SearchDialog(QDialog):
         super(SearchDialog, self).__init__(parent)
         self.app = app
 
-        layout = QHBoxLayout()
+        layout = QGridLayout()
+
+        layout.addWidget(QLabel("ID, ISBN, Stichwort:"))
 
         searchBoxCompleter = QCompleter()
         searchBoxCompleter.setModel(self.app.books)
@@ -1142,11 +1144,11 @@ class SearchDialog(QDialog):
 
         self.searchBox = QLineEdit()
         self.searchBox.setCompleter(searchBoxCompleter)
-        layout.addWidget(self.searchBox, 1)
+        layout.addWidget(self.searchBox, 1, 0)
 
         self.searchButton = QPushButton("Suchen")
         self.searchButton.clicked.connect(self.onSearchButtonClicked)
-        layout.addWidget(self.searchButton)
+        layout.addWidget(self.searchButton, 1, 1)
 
         self.setWindowTitle("Suche")
         self.setWindowIcon(QIcon(self.app.data("search-books.png")))
