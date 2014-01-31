@@ -36,7 +36,6 @@ import itertools
 
 import book
 import user
-import util
 import busyindicator
 import network
 import os

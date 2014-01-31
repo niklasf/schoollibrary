@@ -28,7 +28,6 @@ import datetime
 import dateutil.parser
 
 import indexed
-import util
 import busyindicator
 import network
 import printpreview
