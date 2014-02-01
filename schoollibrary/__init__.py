@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
         self.app.network.finished.connect(self.onNetworkRequestFinished)
 
         self.setWindowTitle("Schulbibliothek")
-        self.setWindowIcon(QIcon(self.app.data("schoollibrary.ico")))
+        self.setWindowIcon(QIcon(self.app.data("schoollibrary.png")))
 
         # Create the user interface.
         self.layoutStack = QStackedLayout()
@@ -485,7 +485,7 @@ class LoginDialog(QDialog):
         self.app.network.finished.connect(self.onNetworkRequestFinished)
 
         self.setWindowTitle("Schulbibliothek Login")
-        self.setWindowIcon(QIcon(self.app.data("schoollibrary.ico")))
+        self.setWindowIcon(QIcon(self.app.data("schoollibrary.png")))
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
 
         self.layoutStack = QStackedLayout()

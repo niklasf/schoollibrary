@@ -1,6 +1,9 @@
 *.py[cd]
 *.swp
 
+build/
+dist/
+
 debian/files
 debian/*.substvars
 debian/*.debhelper
