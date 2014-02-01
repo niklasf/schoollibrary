@@ -15,10 +15,3 @@ Description: school library api and database
  .
  The authentication backend is flexibly configurable.
  Defaults include htusers and IServ.
-
-Package: winst-schoollibrary
-Architecture: all
-Depends: ${misc:Depends}
-Description: manage a school library
- opsi.org installation package for the school library
- client application.
