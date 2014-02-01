@@ -1,0 +1,14 @@
+msgid  "Library"
+msgstr "Bibliothek"
+
+msgid  "Add and modify books"
+msgstr "Bücher hinzufügen und bearbeiten"
+
+msgid  "Delete books"
+msgstr "Bücher löschen"
+
+msgid  "Administer library"
+msgstr "Bibliothek verwalten"
+
+msgid  "Hand out and take back books"
+msgstr "Bücher verleihen und zurücknehmen"
