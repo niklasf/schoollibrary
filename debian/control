@@ -8,7 +8,7 @@ X-Python-Version: >= 2.6
 
 Package: schoollibrary-server
 Architecture: all
-Depends: nodejs, libcrypt-passwdmd5-perl, ${misc:Depends}
+Depends: nodejs, libcrypt-passwdmd5-perl, ${misc:Depends}, ${perl:Depends}
 Description: school library api and database
  Allows school libraries to keep track of their books in a
  database. Also keeps track of who lent a book and when it
@@ -20,7 +20,7 @@ Description: school library api and database
 Package: schoollibrary-client
 Architecture: all
 Depends: python-pyside.qtcore, python-pyside.qtgui, python-pyside.qtnetwork,
- ${misc:Depends}
+ ${misc:Depends}, ${python:Depends}
 Description: school library frontend
  schoollibrary-server allows school libraries to keep track
  of their books in a database. This is a frontend
