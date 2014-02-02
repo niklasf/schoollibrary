@@ -2,8 +2,9 @@ Source: schoollibrary
 Section: database
 Priority: extra
 Maintainer: Niklas Fiekas <niklas.fiekas@tu-clausthal.de>
-Build-Depends: debhelper (>= 8.0.0)
+Build-Depends: debhelper (>= 8.0.0), python (>= 2.6)
 Standards-Version: 3.9.4
+X-Python-Version: >= 2.6
 
 Package: schoollibrary-server
 Architecture: all
@@ -15,3 +16,12 @@ Description: school library api and database
  .
  The authentication backend is flexibly configurable.
  Defaults include htusers and IServ.
+
+Package: schoollibrary-client
+Architecture: all
+Depends: python-pyside.qtcore, python-pyside.qtgui, python-pyside.qtnetwork,
+ ${misc:Depends}
+Description: school library frontend
+ schoollibrary-server allows school libraries to keep track
+ of their books in a database. This is a frontend
+ application to access and manage the database.

@@ -11,3 +11,4 @@ debian/*.debhelper.log
 debian/winst-schoollibrary
 debian/schoollibrary-client
 debian/schoollibrary-server
+debian/tmp

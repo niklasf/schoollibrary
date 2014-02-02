@@ -1,0 +1,10 @@
+usr/bin/schoollibrary-client usr/bin
+usr/lib/python2.7 usr/lib
+usr/share/applications/schoollibrary.desktop usr/share/applications
+usr/share/pixmaps/schoollibrary.svg usr/share/pixmaps
+usr/share/schoollibrary/add-book.png usr/share/schoollibrary
+usr/share/schoollibrary/basket-back.png usr/share/schoollibrary
+usr/share/schoollibrary/basket-go.png usr/share/schoollibrary
+usr/share/schoollibrary/basket.png usr/share/schoollibrary
+usr/share/schoollibrary/schoollibrary.png usr/share/schoollibrary
+usr/share/schoollibrary/search-books.png usr/share/schoollibrary
