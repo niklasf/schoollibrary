@@ -7,6 +7,6 @@
     delaycompress
     notifempty
     postrotate
-        /sbin/restart schoollibrary-server
+        /etc/init.d/schoollibrary-server restart
     endscript
 }
