@@ -1,13 +1,17 @@
 #!/usr/bin/python2
 
 import os
+import distutils.core
 
-from distutils.core import setup
+try:
+    import py2exe
+except:
+    pass
 
 def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
 
-setup(
+distutils.core.setup(
     name="Schoollibrary",
     version="0.0.1",
     description="Manage a school library",
@@ -37,5 +41,6 @@ setup(
             "usr/share/schoollibrary/search-books.png",
             "usr/share/schoollibrary/basket-back.png"
         ])
-    ]
+    ],
+    windows=["schoollibrary-client"]
 )
