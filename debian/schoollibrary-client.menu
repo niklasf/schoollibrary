@@ -1,0 +1,6 @@
+?package(schoollibrary-client): \
+  needs="X11" \
+  section="Applications/Education" \
+  title="Schoollibrary" \
+  command="/usr/bin/schoollibrary-client" \
+  icon="/usr/share/pixmaps/schoollibrary.xpm"
