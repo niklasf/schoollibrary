@@ -1,5 +1,6 @@
 *.py[cd]
 *.swp
+MANIFEST
 
 build/
 dist/
