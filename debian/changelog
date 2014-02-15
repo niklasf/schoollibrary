@@ -1,3 +1,11 @@
+schoollibrary (0.0.2) squeeze; urgency=low
+
+  * Lazily initialize models
+  * Remove dependency on /sbin/restart
+  * Let client depend on python-dateutil
+
+ -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Sat, 15 Feb 2014 19:44:00 +0200
+
 schoollibrary (0.0.1) squeeze; urgency=low
 
   * Initial release.
