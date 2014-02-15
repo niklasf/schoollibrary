@@ -137,7 +137,6 @@ class MainWindow(QMainWindow):
         self.allBooksTable.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.allBooksTable.setContextMenuPolicy(Qt.CustomContextMenu)
         self.allBooksTable.customContextMenuRequested.connect(self.onAllBooksCustomContextMenuRequested)
-        self.allBooksTable.setModel(self.app.books.getProxy())
         self.allBooksTable.setSortingEnabled(True)
         self.allBooksTable.doubleClicked.connect(self.onBookDoubleClicked)
         self.allBooksTab = self.wrapWidget(self.allBooksTable)
@@ -146,7 +145,6 @@ class MainWindow(QMainWindow):
         self.lentBooksTable.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.lentBooksTable.setContextMenuPolicy(Qt.CustomContextMenu)
         self.lentBooksTable.customContextMenuRequested.connect(self.onLentBooksCustomContextMenuRequested)
-        self.lentBooksTable.setModel(self.app.books.getLentProxy())
         self.lentBooksTable.setSortingEnabled(True)
         self.lentBooksTable.doubleClicked.connect(self.onBookDoubleClicked)
         self.lentBooksTab = self.wrapWidget(self.lentBooksTable)
@@ -155,7 +153,6 @@ class MainWindow(QMainWindow):
         self.bookSearchTable.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.bookSearchTable.setContextMenuPolicy(Qt.CustomContextMenu)
         self.bookSearchTable.customContextMenuRequested.connect(self.onBookSearchCustomContextMenuRequested)
-        self.bookSearchTable.setModel(self.app.books.getProxy())
         self.bookSearchTable.setSortingEnabled(True)
         self.bookSearchTable.doubleClicked.connect(self.onBookDoubleClicked)
         self.bookSearchTab = self.wrapWidget(self.bookSearchTable)
@@ -376,7 +373,12 @@ class MainWindow(QMainWindow):
         """Opens a SearchDialog."""
         dialog = book.SearchDialog(self.app, self)
         if dialog.exec_():
-            self.bookSearchTable.model().setSearch(dialog.searchBox.text())
+            if not self.bookSearchTable.model():
+                model = self.app.books.getProxy()
+                model.setSearch(dialog.searchBox.text())
+                self.bookSearchTable.setModel(model)
+            else:
+                self.bookSearchTable.model().setSearch(dialog.searchBox.text())
             action = self.tabVisibilityActions.actions()[2]
             action.setChecked(True)
             self.onTabVisibilityAction(action)
@@ -434,11 +436,24 @@ class MainWindow(QMainWindow):
             self.app.settings.setValue(settingsKeys[action.data()], not action.isChecked())
 
         if not action.isChecked():
+            # Remove tab.
             for index in range(0, self.tabs.count()):
                 if self.tabs.widget(index) == widgets[action.data()]:
                     self.tabs.removeTab(index)
                     return
         else:
+            # Lazily initialize model.
+            if action.data() == 0:
+                if not self.allBooksTable.model():
+                    self.allBooksTable.setModel(self.app.books.getProxy())
+            elif action.data() == 1:
+                if not self.lentBooksTable.model():
+                    self.lentBooksTable.setModel(self.app.books.getLentProxy())
+            elif action.data() == 2:
+                if not self.bookSearchTable.model():
+                    self.bookSearchTable.setModel(self.app.books.getProxy())
+
+            # Insert tab.
             for index in range(0, self.tabs.count()):
                 if self.tabs.widget(index) == widgets[action.data()]:
                     return
