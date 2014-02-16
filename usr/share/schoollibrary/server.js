@@ -3,6 +3,7 @@ var mongoose = require('mongoose');
 var mongooseAutoIncrement = require('mongoose-auto-increment');
 var crypto = require('crypto');
 var connectBasicAuth = require('connect-basic-auth');
+var connectGzip = require('connect-gzip');
 var childProcess = require('child_process');
 var byline = require('byline');
 var validator = require('validator');
@@ -132,6 +133,7 @@ var app = express();
 app.use(express.logger());
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(connectGzip.gzip());
 
 app.use(connectBasicAuth(function (credentials, req, res, next) {
     req.groups = [];
