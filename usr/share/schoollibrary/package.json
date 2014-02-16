@@ -9,7 +9,8 @@
     "connect-basic-auth": "~0.1.0",
     "byline": "~4.1.1",
     "validator": "~3.1.0",
-    "express": "~3.4.8"
+    "express": "~3.4.8",
+    "connect-gzip": "~0.1.6"
   },
   "license": "GPL-3",
   "repository": {
