@@ -1,3 +1,10 @@
+schoollibrary (0.0.3) squeeze; urgency=low
+
+  * Support Gzip compression
+  * Add missing xpm icon
+
+ -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Wed, 19 Feb 2014 14:49:00 +0200
+
 schoollibrary (0.0.2) squeeze; urgency=low
 
   * Lazily initialize models
