@@ -377,6 +377,7 @@ class MainWindow(QMainWindow):
                 model = self.app.books.getProxy()
                 model.setSearch(dialog.searchBox.text())
                 self.bookSearchTable.setModel(model)
+                self.bookSearchTable.sortByColumn(0, Qt.DescendingOrder)
             else:
                 self.bookSearchTable.model().setSearch(dialog.searchBox.text())
             action = self.tabVisibilityActions.actions()[2]
@@ -446,12 +447,15 @@ class MainWindow(QMainWindow):
             if action.data() == 0:
                 if not self.allBooksTable.model():
                     self.allBooksTable.setModel(self.app.books.getProxy())
+                    self.allBooksTable.sortByColumn(0, Qt.DescendingOrder)
             elif action.data() == 1:
                 if not self.lentBooksTable.model():
                     self.lentBooksTable.setModel(self.app.books.getLentProxy())
+                    self.lentBooksTable.sortByColumn(0, Qt.DescendingOrder)
             elif action.data() == 2:
                 if not self.bookSearchTable.model():
                     self.bookSearchTable.setModel(self.app.books.getProxy())
+                    self.bookSearchTable.sortByColumn(0, Qt.DescendingOrder)
 
             # Insert tab.
             for index in range(0, self.tabs.count()):
