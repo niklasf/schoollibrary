@@ -166,7 +166,9 @@ class BookTableModel(QAbstractTableModel):
                             return "%s seit %d Tagen" % (book.lendingUser, duration)
                     return "Ja"
         elif role == Qt.EditRole:
-            if index.column() == 12:
+            if index.column() == 3:
+                return book.location
+            elif index.column() == 12:
                 return book.isbn
         elif role == Qt.UserRole:
             if index.column() == 14:
@@ -474,6 +476,31 @@ class BookTableSortFilterProxyModel(QSortFilterProxyModel):
         return True
 
 
+class LocationListModel(QAbstractListModel):
+
+    def __init__(self, app):
+        super(LocationListModel, self).__init__()
+        self.app = app
+        self.reload()
+
+    def rowCount(self, parent=QModelIndex()):
+        return len(self.cache)
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            return self.cache[index.row()]
+
+    def reload(self):
+        self.beginResetModel()
+
+        items = set((book.location for book in self.app.books.cache.values()))
+
+        self.cache = list(items)
+        self.cache.sort()
+
+        self.endResetModel()
+
+
 class BookDialog(QDialog):
     """A product editing dialog."""
 
@@ -552,7 +579,10 @@ class BookDialog(QDialog):
         self.signatureBox.setMaxLength(50)
         form.addRow("Signatur:", self.signatureBox)
 
-        self.locationBox = QLineEdit()
+        self.locationBox = QComboBox()
+        self.locationBox.setModel(LocationListModel(self.app))
+        self.locationBox.setEditable(True)
+        self.locationBox.setInsertPolicy(QComboBox.NoInsert)
         form.addRow("Standort:", self.locationBox)
 
         self.yearBox = QLineEdit()
@@ -597,7 +627,7 @@ class BookDialog(QDialog):
         self.topicBox.setText(self.book.topic)
         self.keywordsBox.setText(self.book.keywords)
         self.signatureBox.setText(self.book.signature)
-        self.locationBox.setText(self.book.location)
+        self.locationBox.setEditText(self.book.location)
         self.yearBox.setText(str(self.book.year) if self.book.year else "")
         self.publisherBox.setText(self.book.publisher)
         self.placeOfPublicationBox.setText(self.book.placeOfPublication)
@@ -641,7 +671,7 @@ class BookDialog(QDialog):
         if self.signatureBox.text() != self.book.signature:
             return True
 
-        if self.locationBox.text() != self.book.location:
+        if self.locationBox.currentText() != self.book.location:
             return True
 
         if not self.book.year:
@@ -701,7 +731,7 @@ class BookDialog(QDialog):
         params.addQueryItem("topic", self.topicBox.text())
         params.addQueryItem("keywords", self.keywordsBox.text())
         params.addQueryItem("signature", self.signatureBox.text())
-        params.addQueryItem("location", self.locationBox.text())
+        params.addQueryItem("location", self.locationBox.currentText())
         params.addQueryItem("year", str(year) if year else "")
         params.addQueryItem("publisher", self.publisherBox.text())
         params.addQueryItem("placeOfPublication", self.placeOfPublicationBox.text())
