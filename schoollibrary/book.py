@@ -546,7 +546,7 @@ class BookDialog(QDialog):
         form.addRow("Thema:", self.topicBox)
 
         self.keywordsBox = QLineEdit()
-        form.addRow(u"Schlüsselwörter", self.keywordsBox)
+        form.addRow(u"Schlüsselwörter:", self.keywordsBox)
 
         self.signatureBox = QLineEdit()
         self.signatureBox.setMaxLength(50)
