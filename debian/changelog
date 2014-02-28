@@ -1,3 +1,15 @@
+schoollibrary (0.0.4) squeeze; urgency=low
+
+  * Add PDF export for labels
+  * Show busy indicator while users are loaded
+  * Autocomplete topics
+  * Autocomplete locations
+  * Fix typo
+  * Allow different lending durations
+  * Set a default sort order
+
+ -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Fri, 28 Feb 2014 16:22:00 +0200
+
 schoollibrary (0.0.3) squeeze; urgency=low
 
   * Support Gzip compression
