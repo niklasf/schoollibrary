@@ -936,12 +936,15 @@ class LendingDialog(QDialog):
 
         row = QHBoxLayout()
         row.addStretch(1)
-        self.lendButton = QPushButton(u"Für 14 Tage ausleihen")
-        self.lendButton.setIcon(QIcon(self.app.data("basket-go.png")))
-        self.lendButton.clicked.connect(self.onLendButton)
-        row.addWidget(self.lendButton)
+        self.longLendButton = QPushButton(u"Für 4 Wochen ausleihen")
+        self.longLendButton.setIcon(QIcon(self.app.data("basket-go.png")))
+        self.longLendButton.clicked.connect(self.onLongLendButton)
+        row.addWidget(self.longLendButton)
+        self.shortLendButton = QPushButton(u"Für 7 Tage ausleihen")
+        self.shortLendButton.setIcon(QIcon(self.app.data("basket-go.png")))
+        self.shortLendButton.clicked.connect(self.onShortLendButton)
+        row.addWidget(self.shortLendButton)
         form.addRow(row)
-
         widget = QWidget()
         widget.setLayout(form)
         return widget
@@ -991,13 +994,19 @@ class LendingDialog(QDialog):
         self.busyIndicator = busyindicator.BusyIndicator()
         return self.busyIndicator
 
-    def onLendButton(self):
+    def onLongLendButton(self):
+        self.doLend(28)
+
+    def onShortLendButton(self):
+        self.doLend(7)
+
+    def doLend(self, days):
         user = self.lendUserBox.currentText()
 
         params = QUrl()
         params.addQueryItem("_csrf", self.app.login.csrf)
         params.addQueryItem("user", user)
-        params.addQueryItem("days", str(14))
+        params.addQueryItem("days", str(days))
         params.addQueryItem("etag", str(self.book.etag))
 
         path = "/books/%d/lending" % self.book.id
