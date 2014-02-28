@@ -124,7 +124,8 @@ class MainWindow(QMainWindow):
             self.onColumnVisibilityAction(action)
 
         # Load data.
-        self.ticket = None
+        self.booksTicket = None
+        self.usersTicket = None
         self.onRefreshAction()
 
     def initTabs(self):
@@ -314,8 +315,8 @@ class MainWindow(QMainWindow):
     def onRefreshAction(self):
         """Handles the refresh action."""
         self.showBusyIndicator(True)
-        self.app.users.reload()
-        self.ticket = self.app.books.reload()
+        self.usersTicket = self.app.users.reload()
+        self.booksTicket = self.app.books.reload()
 
     def onAboutAction(self):
         """Handles the about action."""
@@ -481,8 +482,13 @@ class MainWindow(QMainWindow):
 
     def onNetworkRequestFinished(self, reply):
         """Called when a network request is finished."""
-        if reply.request().attribute(network.Ticket) == self.ticket:
-            self.ticket = None
+        if reply.request().attribute(network.Ticket) == self.booksTicket:
+            self.booksTicket = None
+
+        if reply.request().attribute(network.Ticket) == self.usersTicket:
+            self.usersTicket = None
+
+        if not self.booksTicket and not self.usersTicket:
             self.showBusyIndicator(False)
 
     def closeEvent(self, event):
