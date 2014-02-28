@@ -1125,7 +1125,7 @@ class LabelPrintDialog(QDialog):
         self.setWindowTitle("Etiketten drucken")
         self.setWindowFlags((self.windowFlags() & ~Qt.WindowContextHelpButtonHint) | Qt.WindowMaximizeButtonHint)
 
-        self.documentBox = printpreview.ExtendedPrintPreview()
+        self.documentBox = printpreview.ExtendedPrintPreview(self.app)
         self.documentBox.printPreview.paintRequested.connect(self.onPaintRequested)
 
         layout = QStackedLayout()

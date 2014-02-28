@@ -20,6 +20,8 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 
+import os
+
 
 class ZoomFactorValidator(QDoubleValidator):
     """Validator for the zoom factor field."""
@@ -54,8 +56,9 @@ class ExtendedPrintPreview(QWidget):
     zooming, navigating pages, printing and exporting to PDF.
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, app, parent=None):
         super(ExtendedPrintPreview, self).__init__(parent)
+        self.app = app
 
         # Create the controls.
         self._initToolBar()
@@ -184,8 +187,12 @@ class ExtendedPrintPreview(QWidget):
         self.printAction = self.printerGroup.addAction("Drucken")
         self.printAction.setIcon(QIcon(":/trolltech/dialogs/qprintpreviewdialog/images/print-24.png"))
         self.printAction.triggered.connect(self.onPrint)
+        self.pdfAction = self.printerGroup.addAction("Als PDF speichern")
+        self.pdfAction.setIcon(QIcon(self.app.data("pdf.png")))
+        self.pdfAction.triggered.connect(self.onPdf)
 
         self.toolBar.addAction(self.printAction)
+        self.toolBar.addAction(self.pdfAction)
 
     def _initPrintPreview(self):
         """Creates the print preview widget."""
@@ -283,6 +290,16 @@ class ExtendedPrintPreview(QWidget):
         self.printer.setOutputFileName(None)
         dialog = QPrintDialog(self.printer, self)
         if dialog.exec_() == QDialog.Accepted:
+            self.printPreview.print_()
+
+    def onPdf(self):
+        """Handles the PDF printing action."""
+        fileName, selectedFilter = QFileDialog.getSaveFileName(self, "Als PDF speichern", os.path.expanduser("~"), "PDF Dokument (*.pdf)")
+        if fileName:
+            if not QFileInfo(fileName).suffix():
+                fileName += ".pdf"
+            self.printer.setOutputFormat(QPrinter.PdfFormat)
+            self.printer.setOutputFileName(fileName)
             self.printPreview.print_()
 
     def onPrintPreviewChanged(self):
