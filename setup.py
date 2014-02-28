@@ -18,6 +18,7 @@ def get_data_files():
         "usr/share/schoollibrary/add-book.png",
         "usr/share/schoollibrary/basket-go.png",
         "usr/share/schoollibrary/basket.png",
+        "usr/share/schoollibrary/pdf.png",
         "usr/share/schoollibrary/schoollibrary.png",
         "usr/share/schoollibrary/search-books.png",
         "usr/share/schoollibrary/basket-back.png"
