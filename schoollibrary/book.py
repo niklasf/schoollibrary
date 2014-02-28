@@ -501,6 +501,31 @@ class LocationListModel(QAbstractListModel):
         self.endResetModel()
 
 
+class TopicListModel(QAbstractListModel):
+
+    def __init__(self, app):
+        super(TopicListModel, self).__init__()
+        self.app = app
+        self.reload()
+
+    def rowCount(self, parent=QModelIndex()):
+        return len(self.cache)
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            return self.cache[index.row()]
+
+    def reload(self):
+        self.beginResetModel()
+
+        items = set((book.topic for book in self.app.books.cache.values()))
+
+        self.cache = list(items)
+        self.cache.sort()
+
+        self.endResetModel()
+
+
 class BookDialog(QDialog):
     """A product editing dialog."""
 
@@ -569,7 +594,10 @@ class BookDialog(QDialog):
         self.volumeBox = QLineEdit()
         form.addRow("Band:", self.volumeBox)
 
-        self.topicBox = QLineEdit()
+        self.topicBox = QComboBox()
+        self.topicBox.setModel(TopicListModel(self.app))
+        self.topicBox.setEditable(True)
+        self.topicBox.setInsertPolicy(QComboBox.NoInsert)
         form.addRow("Thema:", self.topicBox)
 
         self.keywordsBox = QLineEdit()
@@ -624,7 +652,7 @@ class BookDialog(QDialog):
         self.titleBox.setText(self.book.title)
         self.authorsBox.setText(self.book.authors)
         self.volumeBox.setText(self.book.volume)
-        self.topicBox.setText(self.book.topic)
+        self.topicBox.setEditText(self.book.topic)
         self.keywordsBox.setText(self.book.keywords)
         self.signatureBox.setText(self.book.signature)
         self.locationBox.setEditText(self.book.location)
@@ -662,7 +690,7 @@ class BookDialog(QDialog):
         if self.volumeBox.text() != self.book.volume:
             return True
 
-        if self.topicBox.text() != self.book.topic:
+        if self.topicBox.currentText() != self.book.topic:
             return True
 
         if self.keywordsBox.text() != self.book.keywords:
@@ -728,7 +756,7 @@ class BookDialog(QDialog):
         params.addQueryItem("isbn", isbn)
         params.addQueryItem("title", title)
         params.addQueryItem("authors", self.authorsBox.text())
-        params.addQueryItem("topic", self.topicBox.text())
+        params.addQueryItem("topic", self.topicBox.currentText())
         params.addQueryItem("keywords", self.keywordsBox.text())
         params.addQueryItem("signature", self.signatureBox.text())
         params.addQueryItem("location", self.locationBox.currentText())
