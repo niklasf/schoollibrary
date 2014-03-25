@@ -1,4 +1,4 @@
-schoollibrary (0.0.4) squeeze; urgency=low
+schoollibrary (0.0.4) wheezy; urgency=low
 
   * Add PDF export for labels
   * Show busy indicator while users are loaded
@@ -8,25 +8,25 @@ schoollibrary (0.0.4) squeeze; urgency=low
   * Allow different lending durations
   * Set a default sort order
 
- -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Fri, 28 Feb 2014 16:22:00 +0200
+ -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Fri, 28 Feb 2014 16:22:00 +0100
 
-schoollibrary (0.0.3) squeeze; urgency=low
+schoollibrary (0.0.3) wheezy; urgency=low
 
   * Support Gzip compression
   * Add missing xpm icon
 
- -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Wed, 19 Feb 2014 14:49:00 +0200
+ -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Wed, 19 Feb 2014 14:49:00 +0100
 
-schoollibrary (0.0.2) squeeze; urgency=low
+schoollibrary (0.0.2) wheezy; urgency=low
 
   * Lazily initialize models
   * Remove dependency on /sbin/restart
   * Let client depend on python-dateutil
 
- -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Sat, 15 Feb 2014 19:44:00 +0200
+ -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Sat, 15 Feb 2014 19:44:00 +0100
 
-schoollibrary (0.0.1) squeeze; urgency=low
+schoollibrary (0.0.1) wheezy; urgency=low
 
   * Initial release.
 
- -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Thu, 23 Jan 2014 01:21:00 +0200
+ -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Thu, 23 Jan 2014 01:21:00 +0100
