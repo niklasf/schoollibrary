@@ -1,3 +1,10 @@
+schoollibrary (0.0.5) wheezy; urgency=low
+
+  * Clarify Python dependencies
+  * pdf.png was missing on Windows
+
+ -- Niklas Fiekas <niklas.fiekas@tu-clausthal.de>  Tue, 25 Mar 2014 08:39:00 +0100
+
 schoollibrary (0.0.4) wheezy; urgency=low
 
   * Add PDF export for labels
