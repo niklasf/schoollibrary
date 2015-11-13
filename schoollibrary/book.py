@@ -1134,13 +1134,17 @@ class LabelPrintDialog(QDialog):
 
     def onPaintRequested(self, printer):
         painter = QPainter(printer)
-        painter.setFont(QFont("Courier New", 8))
+        painter.setFont(QFont("Courier New", 12))
 
         x = 0
         y = 0
 
-        booksPerLine = (printer.pageRect().width() + 14) / (109 + 14)
-        booksPerPage = (printer.pageRect().height() + 14) / (43 + 14) * booksPerLine
+        WIDTH = 164
+        HEIGHT = 65
+        MARGIN = 14
+
+        booksPerLine = (printer.pageRect().width() + MARGIN) / (WIDTH + MARGIN)
+        booksPerPage = (printer.pageRect().height() + MARGIN) / (HEIGHT + MARGIN) * booksPerLine
 
         for page in range(0, len(self.books) / booksPerPage + 1):
             # Start a new page.
@@ -1157,23 +1161,24 @@ class LabelPrintDialog(QDialog):
             x = 0
             y = 0
 
+
             for book in books:
-                if x + 109 >= printer.pageRect().width():
+                if x + WIDTH >= printer.pageRect().width():
                     x = 0
-                    y += 14 + 43
+                    y += MARGIN + HEIGHT
 
-                painter.drawRect(x, y, 109, 43)
+                painter.drawRect(x, y, WIDTH, HEIGHT)
 
-                x += 109 + 14
+                x += WIDTH + MARGIN
 
             # Draw texts.
             x = 0
             y = 0
 
             for book in books:
-                if x + 109 >= printer.pageRect().width():
+                if x + WIDTH >= printer.pageRect().width():
                     x = 0
-                    y += 14 + 43
+                    y += MARGIN + HEIGHT
 
                 lines = []
 
@@ -1185,9 +1190,9 @@ class LabelPrintDialog(QDialog):
                 if book.location:
                     lines.append(book.location)
 
-                painter.drawText(QRect(x, y, 109, 43), Qt.AlignCenter,  "\n".join(lines))
+                painter.drawText(QRect(x, y, WIDTH, HEIGHT), Qt.AlignCenter,  "\n".join(lines))
 
-                x += 109 + 14
+                x += WIDTH + MARGIN
 
         painter.end()
 
