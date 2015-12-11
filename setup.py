@@ -43,7 +43,7 @@ def get_data_files():
 
 distutils.core.setup(
     name="Schoollibrary",
-    version="0.0.1",
+    version="0.0.7",
     description="Manage a school library",
     long_description=read("README.rst"),
     classifiers=[
@@ -59,7 +59,7 @@ distutils.core.setup(
     ],
     license="GPL3+",
     author="Niklas Fiekas",
-    author_email="niklas.fiekas@tu-clausthal.de",
+    author_email="niklas@backscattering.de",
     packages=["schoollibrary"],
     data_files=get_data_files(),
     scripts=['schoollibrary-client'],
