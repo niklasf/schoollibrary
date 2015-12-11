@@ -56,7 +56,7 @@ class UserListModel(QAbstractListModel):
             return
 
         self.beginResetModel()
-        self.cache = []
+        del self.cache[:]
 
         while reply.canReadLine():
             self.cache.append(str(reply.readLine()).strip())
