@@ -513,10 +513,9 @@ class LoginDialog(QDialog):
         self.setWindowIcon(QIcon(self.app.data("schoollibrary.png")))
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
 
-        self.layoutStack = QStackedLayout()
+        self.layoutStack = QStackedLayout(self)
         self.layoutStack.addWidget(self.initForm())
         self.layoutStack.addWidget(self.initProgressSpinner())
-        self.setLayout(self.layoutStack)
 
         self.ticket = None
 

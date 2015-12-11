@@ -563,10 +563,9 @@ class BookDialog(QDialog):
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
 
         # Create a stack of the form and a busy indicator.
-        self.layoutStack = QStackedLayout()
+        self.layoutStack = QStackedLayout(self)
         self.layoutStack.addWidget(self.initForm())
         self.layoutStack.addWidget(self.initBusyIndicator())
-        self.setLayout(self.layoutStack)
 
         # Initialize form values.
         self.initValues()
@@ -880,11 +879,10 @@ class LendingDialog(QDialog):
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
 
         # Create the stack of the different views and a busy indicator.
-        self.layoutStack = QStackedLayout()
+        self.layoutStack = QStackedLayout(self)
         self.layoutStack.addWidget(self.initLendPage())
         self.layoutStack.addWidget(self.initReturnPage())
         self.layoutStack.addWidget(self.initBusyIndicator())
-        self.setLayout(self.layoutStack)
 
         # Initialize the displayed values.
         self.updateValues(False)
@@ -1128,9 +1126,8 @@ class LabelPrintDialog(QDialog):
         self.documentBox = printpreview.ExtendedPrintPreview(self.app)
         self.documentBox.printPreview.paintRequested.connect(self.onPaintRequested)
 
-        layout = QStackedLayout()
+        layout = QStackedLayout(self)
         layout.addWidget(self.documentBox)
-        self.setLayout(layout)
 
     def onPaintRequested(self, printer):
         painter = QPainter(printer)
@@ -1206,7 +1203,7 @@ class SearchDialog(QDialog):
         super(SearchDialog, self).__init__(parent)
         self.app = app
 
-        layout = QGridLayout()
+        layout = QGridLayout(self)
 
         layout.addWidget(QLabel("ID, ISBN, Stichwort:"))
 
@@ -1225,7 +1222,6 @@ class SearchDialog(QDialog):
         self.setWindowTitle("Suche")
         self.setWindowIcon(QIcon(self.app.data("search-books.png")))
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
-        self.setLayout(layout)
 
     def onSearchButtonClicked(self):
         """Handle clicks on the search button."""
