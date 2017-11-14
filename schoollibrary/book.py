@@ -17,6 +17,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+from __future__ import print_function
+from __future__ import division
+
 from PySide.QtCore import *
 from PySide.QtGui import *
 from PySide.QtNetwork import *
@@ -27,10 +30,7 @@ import re
 import datetime
 import dateutil.parser
 
-import indexed
-import busyindicator
-import network
-import printpreview
+from schoollibrary import indexed, busyindicator, network, printpreview
 
 
 def normalize_isbn(isbn):
@@ -263,7 +263,7 @@ class BookTableModel(QAbstractTableModel):
 
         if path.endswith("/books/") and request.attribute(network.HttpMethod) == "POST":
             # Book created.
-            data = json.loads(str(reply.readAll()))
+            data = json.loads(reply.readAll().data())
             book = self.bookFromData(data)
 
             assert not book.id in self.cache
@@ -278,7 +278,7 @@ class BookTableModel(QAbstractTableModel):
             self.beginResetModel()
             self.cache.clear()
 
-            blob = str(reply.readAll())
+            blob = reply.readAll().data()
             books = json.loads(blob)
 
             for key in books:
@@ -293,7 +293,7 @@ class BookTableModel(QAbstractTableModel):
             id = int(match.group(1))
 
             if method in ("GET", "PUT") and status == 200:
-                data = json.loads(str(reply.readAll()))
+                data = json.loads(reply.readAll().data())
                 book = self.bookFromData(data)
                 if book.id in self.cache:
                     bookIndex = self.indexFromBook(self.cache[book.id])
@@ -320,7 +320,7 @@ class BookTableModel(QAbstractTableModel):
             book = self.cache[id]
 
             if method in ("POST", "PUT", "GET") and status == 200:
-                data = json.loads(str(reply.readAll()))
+                data = json.loads(reply.readAll().data())
                 book.lent = True
                 book.etag = int(reply.rawHeader(QByteArray("ETag")))
                 book.lendingUser = data["user"]
@@ -796,7 +796,7 @@ class BookDialog(QDialog):
             QMessageBox.warning(self, self.windowTitle(), u"Keine Berechtigung zum Eintragen und Bearbeiten von Büchern.")
             return
         elif reply.error() != QNetworkReply.NoError:
-            print reply.error()
+            print(reply.error())
             QMessageBox.warning(self, self.windowTitle(), self.app.login.censorError(reply.errorString()))
             return
 
@@ -1140,10 +1140,10 @@ class LabelPrintDialog(QDialog):
         HEIGHT = 65
         MARGIN = 14
 
-        booksPerLine = (printer.pageRect().width() + MARGIN) / (WIDTH + MARGIN)
-        booksPerPage = (printer.pageRect().height() + MARGIN) / (HEIGHT + MARGIN) * booksPerLine
+        booksPerLine = (printer.pageRect().width() + MARGIN) // (WIDTH + MARGIN)
+        booksPerPage = (printer.pageRect().height() + MARGIN) // (HEIGHT + MARGIN) * booksPerLine
 
-        for page in range(0, len(self.books) / booksPerPage + 1):
+        for page in range(0, len(self.books) // booksPerPage + 1):
             # Start a new page.
             if page != 0:
                 if not printer.newPage():

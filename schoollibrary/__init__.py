@@ -33,12 +33,9 @@ import sys
 import json
 import uuid
 import itertools
-
-import book
-import user
-import busyindicator
-import network
 import os
+
+from schoollibrary import book, user, busyindicator, network
 
 
 class Application(QApplication):
@@ -634,7 +631,7 @@ class LoginDialog(QDialog):
 
         # Ensure the response is structured as expected.
         try:
-            user = json.loads(unicode(reply.readAll()))
+            user = json.loads(reply.readAll().data())
             self.csrf = user["_csrf"]
             self.groups = user["groups"]
             self.libraryAdmin = "library_admin" in self.groups
