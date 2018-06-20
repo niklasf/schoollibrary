@@ -3,7 +3,9 @@ var mongoose = require('mongoose');
 var mongooseAutoIncrement = require('mongoose-auto-increment');
 var crypto = require('crypto');
 var connectBasicAuth = require('connect-basic-auth');
-var connectGzip = require('connect-gzip');
+var connectLogger = require('connect-logger');
+var compression = require('compression');
+var bodyParser = require('body-parser');
 var childProcess = require('child_process');
 var byline = require('byline');
 var validator = require('validator');
@@ -130,10 +132,10 @@ if (fs.existsSync('users.sh')) {
 }
 
 var app = express();
-app.use(express.logger());
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(connectGzip.gzip());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(compression());
+app.use(connectLogger());
 
 app.use(connectBasicAuth(function (credentials, req, res, next) {
     req.groups = [];

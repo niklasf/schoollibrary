@@ -2,15 +2,17 @@
   "name": "schoollibrary",
   "description": "Manage a school library",
   "version": "0.0.1",
-  "author": "Niklas Fiekas <niklas.fiekas@tu-clausthal.de>",
+  "author": "Niklas Fiekas <niklas.fiekas@backscattering.de>",
   "dependencies": {
-    "mongoose": "~3.8.4",
-    "mongoose-auto-increment": "~2.1.1",
-    "connect-basic-auth": "~0.1.0",
-    "byline": "~4.1.1",
-    "validator": "~3.1.0",
-    "express": "~3.4.8",
-    "connect-gzip": "~0.1.6"
+    "body-parser": "^1.18.3",
+    "byline": "^5.0.0",
+    "compression": "^1.7.2",
+    "connect-basic-auth": "^0.1.0",
+    "connect-logger": "0.0.1",
+    "express": "^4.16.3",
+    "mongoose": "^5.1.6",
+    "mongoose-auto-increment": "^5.0.1",
+    "validator": "^10.4.0"
   },
   "license": "GPL-3",
   "repository": {
