@@ -364,7 +364,7 @@ class BookTableModel(QAbstractTableModel):
         return book
 
     def indexFromBook(self, book):
-        books = self.cache.viewvalues()
+        books = self.cache.valuesview()
         if book in books:
             return self.createIndex(self.cache.keys().index(book.id), 0, book)
         else:
@@ -896,7 +896,7 @@ class LendingDialog(QDialog):
         self.app.books.modelReset.connect(self.onBooksModelReset)
 
     def onBooksDataChanged(self, topLeft, bottomRight):
-        for row in xrange(topLeft.row(), bottomRight.row() + 1):
+        for row in range(topLeft.row(), bottomRight.row() + 1):
             if self.book.id == self.app.books.index(row, 0, QModelIndex()).data(Qt.UserRole):
                 self.updateValues(False)
                 break
