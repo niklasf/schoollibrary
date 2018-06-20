@@ -275,6 +275,7 @@ app.post('/books/', function (req, res) {
 
     book.save(function (err) {
         if (err) {
+            console.log(err);
             res.send(400, err);
         } else {
             res.set('ETag', book.etag);
@@ -335,6 +336,7 @@ app.put('/books/:id/', function (req, res) {
 
         book.save(function (err) {
             if (err) {
+                console.log(err);
                 return res.send(400, err);
             }
 
@@ -423,6 +425,7 @@ app.post('/books/:id/lending', function (req, res) {
 
         book.save(function (err) {
             if (err) {
+                console.log(err);
                 return res.send(400, err);
             }
 
@@ -455,6 +458,7 @@ app.delete('/books/:id/lending', function (req, res) {
 
         book.save(function (err) {
             if (err) {
+                console.log(err);
                 return res.send(400, err);
             } else {
                 res.set('ETag', book.etag);
