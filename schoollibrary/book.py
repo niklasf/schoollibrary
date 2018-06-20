@@ -322,13 +322,13 @@ class BookTableModel(QAbstractTableModel):
             if method in ("POST", "PUT", "GET") and status == 200:
                 data = json.loads(reply.readAll().data())
                 book.lent = True
-                book.etag = int(reply.rawHeader(QByteArray("ETag")))
+                book.etag = int(reply.rawHeader(QByteArray("ETag")).data())
                 book.lendingUser = data["user"]
                 book.lendingSince = data["since"]
                 book.lendingDays = int(data["days"])
             elif (method == "GET" and status == 404) or (method == "DELETE" and status in (200, 204)):
                 book.lent = False
-                book.etag = int(reply.rawHeader(QByteArray("ETag")))
+                book.etag = int(reply.rawHeader(QByteArray("ETag")).data())
                 book.lendingUser = None
                 book.lendingSince = None
                 book.lendingDays = None
