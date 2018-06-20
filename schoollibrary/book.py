@@ -264,6 +264,7 @@ class BookTableModel(QAbstractTableModel):
         if path.endswith("/books/") and request.attribute(network.HttpMethod) == "POST":
             # Book created.
             data = json.loads(reply.readAll().data())
+            print(data)
             book = self.bookFromData(data)
 
             assert not book.id in self.cache

@@ -1,8 +1,15 @@
-#!/bin/bash
+#!/bin/sh
+
+command -v nodejs
+if [ $? -eq 0 ]; then
+    NODEJS=nodejs
+else
+    NODEJS=node
+fi
 
 if [ -f usr/share/schoollibrary/server.js ]
 then
-    nodejs usr/share/schoollibrary/server.js
+    $NODEJS usr/share/schoollibrary/server.js
 else
-    nodejs /usr/share/schoollibrary/server.js
+    $NODEJS /usr/share/schoollibrary/server.js
 fi
