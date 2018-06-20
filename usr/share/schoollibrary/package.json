@@ -12,7 +12,7 @@
     "express": "^4.16.3",
     "mongoose": "^5.1.6",
     "mongoose-auto-increment": "^5.0.1",
-    "validator": "^10.4.0"
+    "validator": "^3.1.0"
   },
   "license": "GPL-3",
   "repository": {
