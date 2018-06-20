@@ -53,7 +53,7 @@ var bookSchema = mongoose.Schema({
         type: String,
         default: '',
         trim: true,
-        validate: function (isbn) {
+        validator: function (isbn) {
             if (!isbn) {
                 return true;
             } else {
