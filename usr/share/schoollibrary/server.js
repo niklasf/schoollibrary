@@ -118,7 +118,10 @@ bookSchema.virtual('lent').get(function () {
     return !! (this.lending && this.lending.user);
 });
 
-bookSchema.plugin(mongooseAutoIncrement.plugin, 'Book');
+bookSchema.plugin(mongooseAutoIncrement.plugin, {
+    model: 'Book',
+    startAt: 10000
+});
 
 var Book = mongoose.model('Book', bookSchema);
 
